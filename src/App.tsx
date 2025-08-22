@@ -28,7 +28,7 @@ const SPELLS = Object.freeze({
   MERA: 'メラ',
   HOIMI: 'ホイミ',
   SUKARA: 'スカラ',
-  RURA: 'ルーラ'
+  BUFF_ATK: 'バイキルト'
 });
 
 // ゲーム状態
@@ -166,8 +166,8 @@ const SpellDatabase = {
       target.addStatusEffect('defense', 5, 3, addLogMessage);
     }
   ),
-  [SPELLS.RURA]: new Spell(
-    SPELLS.RURA, 3, 'ally', '味方の攻撃力を上げる',
+  [SPELLS.BUFF_ATK]: new Spell(
+    SPELLS.BUFF_ATK, 3, 'ally', '味方の攻撃力を上げる',
     (caster, target, addLogMessage) => {
       target.addStatusEffect('attack', 4, 3, addLogMessage);
     }
@@ -395,7 +395,7 @@ class EnemyAI {
       if (spell.name === SPELLS.HOIMI && MathUtils.ratio(target.hp, target.maxHp) < 0.5) {
         priority += 40;
       }
-      if ((spell.name === SPELLS.SUKARA || spell.name === SPELLS.RURA) && 
+      if ((spell.name === SPELLS.SUKARA || spell.name === SPELLS.BUFF_ATK) && 
           !target.statusEffects.has(spell.name === SPELLS.SUKARA ? 'defense' : 'attack')) {
         priority += 25;
       }
@@ -412,7 +412,7 @@ const CharacterFactory = {
       new Character({
         id: 'player1',
         name: "勇者", hp: 45, mp: 15, speed: 4, attack: 18, defense: 12, 
-        spells: [SPELLS.MERA, SPELLS.HOIMI, SPELLS.RURA], isPlayer: true
+        spells: [SPELLS.MERA, SPELLS.HOIMI, SPELLS.BUFF_ATK], isPlayer: true
       }),
       new Character({
         id: 'player2',
@@ -436,12 +436,12 @@ const CharacterFactory = {
       }),
       new Character({
         id: 'enemy2',
-        name: "ゴーレム", hp: 60, mp: 0, speed: 2, attack: 15, defense: 18, 
+        name: "ゴーレム", hp: 60, mp: 0, speed: 2, attack: 12, defense: 18, 
         spells: [], isPlayer: false
       }),
       new Character({
         id: 'enemy3',
-        name: "ドラキー", hp: 25, mp: 15, speed: 5, attack: 12, defense: 6, 
+        name: "ドラキー", hp: 25, mp: 15, speed: 4, attack: 15, defense: 6, 
         spells: [SPELLS.SUKARA], isPlayer: false
       })
     ];
@@ -538,9 +538,12 @@ const BattleGame = () => {
       if (action) enemyActions.push(action);
     });
     
-    // 全アクションを速さ順でソート
+    // 全アクションを速さ順でソート（速さが同じ場合はランダム）
     const allActions = [...plannedActions, ...enemyActions];
-    allActions.sort((a, b) => b.actor.speed - a.actor.speed);
+    allActions.sort((a, b) => {
+      const speedDiff = b.actor.speed - a.actor.speed;
+      return speedDiff === 0 ? Math.random() - 0.5 : speedDiff;
+    });
     
     // アクションを順次実行
     let actionIndex = 0;
