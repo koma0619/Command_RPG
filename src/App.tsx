@@ -5,7 +5,7 @@ const CONFIG = {
   BATTLE: {
     TURN_DELAY: 1500,
     RESTART_DELAY: 2000,
-    MAX_LOG_LINES: 5,
+    MAX_LOG_LINES: 10,
     CRITICAL_RATE: 0.05,
     CRITICAL_MULTIPLIER: 1.5,
     MIN_DAMAGE: 1,
@@ -40,15 +40,15 @@ const GAME_STATES = Object.freeze({
 
 // ================== ユーティリティクラス ==================
 class MathUtils {
-  static randBetween(min, max) {
+  static randBetween(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
-  static clamp(value, min, max) {
+  static clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value));
   }
 
-  static ratio(current, max) {
+  static ratio(current: number, max: number): number {
     return max > 0 ? current / max : 0;
   }
 }
@@ -108,7 +108,7 @@ class BattleCalculator {
 
 // ================== 状態効果管理 ==================
 class StatusEffect {
-  constructor(stat, change, duration) {
+  constructor(stat: string, change: number, duration: number) {
     this.stat = stat;
     this.change = change;
     this.duration = duration;
@@ -436,7 +436,7 @@ const CharacterFactory = {
       }),
       new Character({
         id: 'enemy2',
-        name: "ゴーレム", hp: 60, mp: 0, speed: 2, attack: 20, defense: 18, 
+        name: "ゴーレム", hp: 60, mp: 0, speed: 2, attack: 15, defense: 18, 
         spells: [], isPlayer: false
       }),
       new Character({
