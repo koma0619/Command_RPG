@@ -467,7 +467,7 @@ const CharacterFactory = {
     return [
       new Character({
         id: 'player1',
-        name: "勇者", hp: 45, mp: 15, speed: 4, attack: 18, defense: 12, 
+        name: "勇者", hp: 45, mp: 15, speed: 4, attack: 15, defense: 12, 
         spells: [SPELLS.MERA, SPELLS.HOIMI, SPELLS.BUFF_ATK], isPlayer: true
       }),
       new Character({
@@ -487,17 +487,17 @@ const CharacterFactory = {
     return [
       new Character({
         id: 'enemy1',
-        name: "スライム", hp: 30, mp: 12, speed: 3, attack: 14, defense: 8, 
+        name: "スライム", hp: 30, mp: 12, speed: 3, attack: 9, defense: 8, 
         spells: [SPELLS.MERA], isPlayer: false
       }),
       new Character({
         id: 'enemy2',
-        name: "ゴーレム", hp: 60, mp: 0, speed: 2, attack: 12, defense: 18, 
+        name: "ゴーレム", hp: 60, mp: 0, speed: 2, attack: 7, defense: 18, 
         spells: [], isPlayer: false
       }),
       new Character({
         id: 'enemy3',
-        name: "ドラキー", hp: 25, mp: 15, speed: 4, attack: 15, defense: 6, 
+        name: "ドラキー", hp: 25, mp: 15, speed: 4, attack: 10, defense: 6, 
         spells: [SPELLS.SUKARA], isPlayer: false
       })
     ];
@@ -516,11 +516,11 @@ const BattleGame = () => {
   const [players, setPlayers] = useState<Character[]>([]);
   const [enemies, setEnemies] = useState<Character[]>([]);
   const [battleLog, setBattleLog] = useState<string[]>([]);
-  const [gameState, setGameState] = useState<keyof typeof GAME_STATES>(GAME_STATES.INPUT);
+  const [gameState, setGameState] = useState<'input' | 'executing' | 'finished'>(GAME_STATES.INPUT);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [showTargetSelection, setShowTargetSelection] = useState(false);
   const [currentActionData, setCurrentActionData] = useState<ActionData | null>(null);
-  const [plannedActions, setPlannedActions] = useState<BattleAction[]>([]);
+  const plannedActionsRef = useRef<BattleAction[]>([]); // 選択されたアクションを保持するRef
   const [battleResult, setBattleResult] = useState<string | null>(null);
   
   const aiRef = useRef(new EnemyAI());
@@ -553,7 +553,8 @@ const BattleGame = () => {
     
     if (actionType === ACTION_TYPES.DEFEND) {
       const action = new BattleAction(player, actionType, player, spellName);
-      setPlannedActions(prev => [...prev, action]);
+      plannedActionsRef.current = [...plannedActionsRef.current, action];
+      console.log("Planned Actions Updated:", plannedActionsRef.current);
       moveToNextPlayer();
     } else {
       setShowTargetSelection(true);
@@ -571,8 +572,8 @@ const BattleGame = () => {
       currentActionData.spellName
     );
     
-    setPlannedActions(prev => [...prev, action]);
-    console.log("Planned Actions Updated:", plannedActions);
+    plannedActionsRef.current = [...plannedActionsRef.current, action];
+    console.log("Planned Actions Updated:", plannedActionsRef.current);
     setShowTargetSelection(false);
     setCurrentActionData(null);
     moveToNextPlayer();
@@ -602,10 +603,10 @@ const BattleGame = () => {
       if (action) enemyActions.push(action);
     });
 
-    console.log("Planned Actions:", plannedActions);
+    console.log("Planned Actions:", plannedActionsRef.current);
     
     // 全アクションを速さ順でソート（速さが同じ場合はランダム）
-    const allActions = [...plannedActions, ...enemyActions];
+    const allActions = [...plannedActionsRef.current, ...enemyActions];
     allActions.sort((a, b) => {
       const speedDiff = b.actor.speed - a.actor.speed;
       return speedDiff === 0 ? Math.random() - 0.5 : speedDiff;
@@ -655,7 +656,7 @@ const BattleGame = () => {
       setGameState(GAME_STATES.FINISHED);
     } else {
       // 次のターン開始
-      setPlannedActions([]);
+      plannedActionsRef.current = [];
       setCurrentPlayerIndex(players.findIndex(p => p.alive));
       setGameState(GAME_STATES.INPUT);
     }
@@ -672,7 +673,7 @@ const BattleGame = () => {
     setCurrentPlayerIndex(0);
     setShowTargetSelection(false);
     setCurrentActionData(null);
-    setPlannedActions([]);
+    plannedActionsRef.current = [];
     setBattleResult(null);
     addLogMessage("戦闘開始！");
   };
