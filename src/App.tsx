@@ -108,6 +108,10 @@ class BattleCalculator {
 
 // ================== 状態効果管理 ==================
 class StatusEffect {
+  stat: string;
+  change: number;
+  duration: number;
+
   constructor(stat: string, change: number, duration: number) {
     this.stat = stat;
     this.change = change;
@@ -126,8 +130,22 @@ class StatusEffect {
 }
 
 // ================== 呪文システム ==================
+type SpellEffect = (caster: Character, target: Character, addLogMessage: (message: string) => void) => void;
+
 class Spell {
-  constructor(name, mpCost, targetType, description, effect) {
+  name: string;
+  mpCost: number;
+  targetType: 'enemy' | 'ally';
+  description: string;
+  effect: SpellEffect;
+
+  constructor(
+    name: string,
+    mpCost: number,
+    targetType: 'enemy' | 'ally',
+    description: string,
+    effect: SpellEffect
+  ) {
     this.name = name;
     this.mpCost = mpCost;
     this.targetType = targetType;
@@ -175,8 +193,36 @@ const SpellDatabase = {
 };
 
 // ================== キャラクタークラス ==================
+interface CharacterConfig {
+  id?: string;
+  name: string;
+  hp: number;
+  mp: number;
+  speed: number;
+  attack: number;
+  defense: number;
+  spells?: string[];
+  isPlayer: boolean;
+}
+
 class Character {
-  constructor(config) {
+  id: string;
+  name: string;
+  hp: number;
+  maxHp: number;
+  mp: number;
+  maxMp: number;
+  speed: number;
+  baseAttack: number;
+  attack: number;
+  baseDefense: number;
+  defense: number;
+  spells: string[];
+  isPlayer: boolean;
+  alive: boolean;
+  statusEffects: Map<string, StatusEffect>;
+
+  constructor(config: CharacterConfig) {
     this.id = config.id || Math.random().toString(36).substr(2, 9);
     this.name = config.name;
     this.hp = config.hp;
@@ -194,7 +240,7 @@ class Character {
     this.statusEffects = new Map();
   }
 
-  takeDamage(damage, isCritical = false, addLogMessage) {
+  takeDamage(damage: number, isCritical = false, addLogMessage: (message: string) => void) {
     const actualDamage = Math.min(damage, this.hp);
     this.hp = Math.max(0, this.hp - damage);
     
@@ -210,7 +256,7 @@ class Character {
     }
   }
 
-  heal(amount, addLogMessage) {
+  heal(amount: number, addLogMessage: (message: string) => void) {
     const actualHeal = Math.min(amount, this.maxHp - this.hp);
     this.hp = Math.min(this.maxHp, this.hp + amount);
     
@@ -219,11 +265,11 @@ class Character {
     }
   }
 
-  consumeMP(amount) {
+  consumeMP(amount: number) {
     this.mp = Math.max(0, this.mp - amount);
   }
 
-  addStatusEffect(stat, change, duration, addLogMessage) {
+  addStatusEffect(stat: string, change: number, duration: number, addLogMessage: (message: string) => void) {
     this.statusEffects.set(stat, new StatusEffect(stat, change, duration));
     this._applyStatChange(stat, change);
     
@@ -231,7 +277,7 @@ class Character {
     addLogMessage(`${this.name}の${stat}が${Math.abs(change)}${direction}！`);
   }
 
-  _applyStatChange(stat, change) {
+  _applyStatChange(stat: string, change: number) {
     if (stat === 'attack') {
       this.attack = Math.max(1, this.attack + change);
     } else if (stat === 'defense') {
@@ -239,7 +285,7 @@ class Character {
     }
   }
 
-  processEndTurn(addLogMessage) {
+  processEndTurn(addLogMessage: (message: string) => void) {
     for (const [stat, effect] of this.statusEffects.entries()) {
       if (effect.decrementDuration()) {
         this._removeEffect(stat);
@@ -248,7 +294,7 @@ class Character {
     }
   }
 
-  _removeEffect(stat) {
+  _removeEffect(stat: string) {
     this.statusEffects.delete(stat);
     if (stat === 'attack') {
       this.attack = this.baseAttack;
@@ -257,7 +303,7 @@ class Character {
     }
   }
 
-  canCastSpell(spellName) {
+  canCastSpell(spellName: string) {
     const spell = SpellDatabase[spellName];
     return spell && spell.canCast(this);
   }
@@ -280,7 +326,17 @@ class Character {
 
 // ================== バトルアクション ==================
 class BattleAction {
-  constructor(actor, actionType, target = null, spellName = null) {
+  actor: Character;
+  actionType: string;
+  target: Character | null;
+  spellName: string | null;
+
+  constructor(
+    actor: Character,
+    actionType: string,
+    target: Character | null = null,
+    spellName: string | null = null
+  ) {
     this.actor = actor;
     this.actionType = actionType;
     this.target = target;
@@ -449,16 +505,23 @@ const CharacterFactory = {
 };
 
 // ================== Reactコンポーネント ==================
+interface ActionData {
+  player: Character;
+  actionType: string;
+  spellName: string | null;
+  targetTeam: Character[];
+}
+
 const BattleGame = () => {
-  const [players, setPlayers] = useState([]);
-  const [enemies, setEnemies] = useState([]);
-  const [battleLog, setBattleLog] = useState([]);
-  const [gameState, setGameState] = useState(GAME_STATES.INPUT);
+  const [players, setPlayers] = useState<Character[]>([]);
+  const [enemies, setEnemies] = useState<Character[]>([]);
+  const [battleLog, setBattleLog] = useState<string[]>([]);
+  const [gameState, setGameState] = useState<keyof typeof GAME_STATES>(GAME_STATES.INPUT);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [showTargetSelection, setShowTargetSelection] = useState(false);
-  const [currentActionData, setCurrentActionData] = useState(null);
-  const [plannedActions, setPlannedActions] = useState([]);
-  const [battleResult, setBattleResult] = useState(null);
+  const [currentActionData, setCurrentActionData] = useState<ActionData | null>(null);
+  const [plannedActions, setPlannedActions] = useState<BattleAction[]>([]);
+  const [battleResult, setBattleResult] = useState<string | null>(null);
   
   const aiRef = useRef(new EnemyAI());
   
@@ -498,7 +561,7 @@ const BattleGame = () => {
   };
 
   // ターゲット選択処理
-  const handleTargetSelection = (target) => {
+  const handleTargetSelection = (target : Character) => {
     if (!currentActionData) return;
     
     const action = new BattleAction(
@@ -509,6 +572,7 @@ const BattleGame = () => {
     );
     
     setPlannedActions(prev => [...prev, action]);
+    console.log("Planned Actions Updated:", plannedActions);
     setShowTargetSelection(false);
     setCurrentActionData(null);
     moveToNextPlayer();
@@ -537,6 +601,8 @@ const BattleGame = () => {
       const action = aiRef.current.planAction(enemy, players);
       if (action) enemyActions.push(action);
     });
+
+    console.log("Planned Actions:", plannedActions);
     
     // 全アクションを速さ順でソート（速さが同じ場合はランダム）
     const allActions = [...plannedActions, ...enemyActions];
