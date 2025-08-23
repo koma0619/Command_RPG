@@ -480,7 +480,7 @@ const BattleGame = () => {
   }, [addLogMessage]);
 
   // プレイヤー入力処理
-  const handleCommandSelection = useCallback((player, actionType, spellName = null) => {
+  const handleCommandSelection = (player, actionType, spellName = null) => {
     const targetTeam = actionType === ACTION_TYPES.DEFEND ? [player] : 
                       (actionType === ACTION_TYPES.SPELL && SpellDatabase[spellName]?.targetType === 'ally') ? players :
                       enemies;
@@ -495,10 +495,10 @@ const BattleGame = () => {
     } else {
       setShowTargetSelection(true);
     }
-  }, [players, enemies]);
+  };
 
   // ターゲット選択処理
-  const handleTargetSelection = useCallback((target) => {
+  const handleTargetSelection = (target) => {
     if (!currentActionData) return;
     
     const action = new BattleAction(
@@ -512,10 +512,10 @@ const BattleGame = () => {
     setShowTargetSelection(false);
     setCurrentActionData(null);
     moveToNextPlayer();
-  }, [currentActionData]);
+  };
 
   // 次のプレイヤーへ移動
-  const moveToNextPlayer = useCallback(() => {
+  const moveToNextPlayer = () => {
     const nextIndex = currentPlayerIndex + 1;
     const nextAlivePlayerIndex = players.findIndex((p, i) => i >= nextIndex && p.alive);
     
@@ -525,10 +525,10 @@ const BattleGame = () => {
       // 全プレイヤーの入力完了、ターン実行
       executeTurn();
     }
-  }, [currentPlayerIndex, players]);
+  };
 
   // ターン実行
-  const executeTurn = useCallback(() => {
+  const executeTurn = () => {
     setGameState(GAME_STATES.EXECUTING);
     
     // 敵の行動を計画
@@ -565,12 +565,11 @@ const BattleGame = () => {
       actionIndex++;
       setTimeout(executeNextAction, CONFIG.BATTLE.TURN_DELAY);
     };
-    
     executeNextAction();
-  }, [plannedActions, enemies, players, addLogMessage]);
+  };
 
   // ターン終了処理
-  const endTurn = useCallback(() => {
+  const endTurn = () => {
     // 状態効果処理
     [...players, ...enemies].forEach(char => {
       if (char.alive) {
@@ -594,10 +593,10 @@ const BattleGame = () => {
       setCurrentPlayerIndex(players.findIndex(p => p.alive));
       setGameState(GAME_STATES.INPUT);
     }
-  }, [players, enemies, addLogMessage]);
+  };
 
   // ゲームリスタート
-  const restartGame = useCallback(() => {
+  const restartGame = () => {
     const newPlayers = CharacterFactory.createPlayerTeam();
     const newEnemies = CharacterFactory.createEnemyTeam();
     setPlayers(newPlayers);
@@ -610,7 +609,7 @@ const BattleGame = () => {
     setPlannedActions([]);
     setBattleResult(null);
     addLogMessage("戦闘開始！");
-  }, [addLogMessage]);
+  };
 
   const currentPlayer = players[currentPlayerIndex];
   const aliveTargets = currentActionData?.targetTeam?.filter(char => char.alive) || [];
