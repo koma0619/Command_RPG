@@ -34,8 +34,8 @@ const attackMagic: Record<string, Skill> = {
         id: 'mera_mi',
         name: 'メラミ',
         type: 'attack_magic',
-        mpCost: 8,
-        power: 45,
+        mpCost: 5,
+        power: 20,
         target: 'enemy_single',
         description: '敵単体に中ダメージの炎系呪文'
     },
@@ -43,8 +43,8 @@ const attackMagic: Record<string, Skill> = {
         id: 'mera_zoma',
         name: 'メラゾーマ',
         type: 'attack_magic',
-        mpCost: 15,
-        power: 80,
+        mpCost: 20,
+        power: 50,
         target: 'enemy_single',
         description: '敵単体に大ダメージの炎系呪文'
     },
@@ -52,8 +52,8 @@ const attackMagic: Record<string, Skill> = {
         id: 'io_ra',
         name: 'イオラ',
         type: 'attack_magic',
-        mpCost: 12,
-        power: 40,
+        mpCost: 5,
+        power: 15,
         target: 'enemy_all',
         description: '敵全体に中ダメージの爆発呪文'
     },
@@ -62,7 +62,7 @@ const attackMagic: Record<string, Skill> = {
         name: 'イオナズン',
         type: 'attack_magic',
         mpCost: 20,
-        power: 70,
+        power: 40,
         target: 'enemy_all',
         description: '敵全体に大ダメージの爆発呪文'
     }
@@ -74,7 +74,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         id: 'bike_ruto',
         name: 'バイキルト',
         type: 'buff',
-        mpCost: 6,
+        mpCost: 4,
         target: 'ally_single',
         effect: {
             kind: 'buff',
@@ -89,7 +89,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         id: 'sca_ra',
         name: 'スカラ',
         type: 'buff',
-        mpCost: 6,
+        mpCost: 3,
         target: 'ally_single',
         effect: {
             kind: 'buff',
@@ -104,7 +104,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         id: 'pio_ra',
         name: 'ピオラ',
         type: 'buff',
-        mpCost: 6,
+        mpCost: 3,
         target: 'ally_single',
         effect: {
             kind: 'buff',
@@ -119,7 +119,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         id: 'magic_barrier',
         name: 'マジックバリア',
         type: 'buff',
-        mpCost: 10,
+        mpCost: 4,
         target: 'ally_all',
         effect: {
             kind: 'buff',
@@ -134,7 +134,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         id: 'ruka_ni',
         name: 'ルカニ',
         type: 'debuff',
-        mpCost: 6,
+        mpCost: 3,
         target: 'enemy_single',
         effect: {
             kind: 'debuff',
@@ -150,7 +150,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         id: 'hena_tos',
         name: 'ヘナトス',
         type: 'debuff',
-        mpCost: 6,
+        mpCost: 4,
         target: 'enemy_single',
         effect: {
             kind: 'debuff',
@@ -202,7 +202,7 @@ const attackSkills: Record<string, Skill> = {
         id: 'shippu_tsuki',
         name: '疾風突き',
         type: 'attack_fast',
-        mpCost: 4,
+        mpCost: 2,
         target: 'enemy_single',
         power: 0.75,
         priority: 1,
@@ -212,7 +212,7 @@ const attackSkills: Record<string, Skill> = {
         id: 'samidare_giri',
         name: '五月雨突き',
         type: 'attack_multi',
-        mpCost: 8,
+        mpCost: 6,
         target: 'enemy_single',
         power: 0.5,
         hits: 4,
@@ -222,7 +222,7 @@ const attackSkills: Record<string, Skill> = {
         id: 'majin_giri',
         name: '魔人斬り',
         type: 'attack_gamble',
-        mpCost: 10,
+        mpCost: 4,
         target: 'enemy_single',
         power: 2.0,
         chance: 0.5,
@@ -232,7 +232,7 @@ const attackSkills: Record<string, Skill> = {
         id: 'nagi_harai',
         name: 'なぎ払い',
         type: 'attack_physical',
-        mpCost: 8,
+        mpCost: 4,
         target: 'enemy_all',
         power: 0.6,
         description: '敵全体に通常の60%ダメージを与える'
@@ -251,7 +251,7 @@ const attackSkills: Record<string, Skill> = {
         id: 'miracle_sword',
         name: 'ミラクルソード',
         type: 'attack_drain',
-        mpCost: 12,
+        mpCost: 8,
         target: 'enemy_single',
         power: 1.0,
         drain: 0.5,
@@ -275,7 +275,7 @@ const supportSkills: Record<string, Skill> = {
         id: 'niou_dachi',
         name: '仁王立ち',
         type: 'protect',
-        mpCost: 8,
+        mpCost: 2,
         target: 'self',
         effect: {
             kind: 'status',
@@ -290,7 +290,7 @@ const supportSkills: Record<string, Skill> = {
         id: 'otakebi',
         name: 'おたけび',
         type: 'stun',
-        mpCost: 6,
+        mpCost: 4,
         target: 'enemy_all',
         effect: {
             kind: 'status',
@@ -305,7 +305,7 @@ const supportSkills: Record<string, Skill> = {
         id: 'tameru',
         name: 'ためる',
         type: 'charge',
-        mpCost: 4,
+        mpCost: 2,
         target: 'self',
         effect: {
             kind: 'buff',
@@ -332,7 +332,7 @@ const healingMagic: Record<string, Skill> = {
         id: 'behomarah',
         name: 'ベホマラー',
         type: 'heal',
-        mpCost: 12,
+        mpCost: 8,
         target: 'ally_all',
         power: 40,
         description: '味方全員のHPを40回復する'
@@ -341,7 +341,7 @@ const healingMagic: Record<string, Skill> = {
         id: 'rihoimi',
         name: 'リホイミ',
         type: 'heal_regen',
-        mpCost: 8,
+        mpCost: 4,
         target: 'ally_single',
         power: 25,
         effect: {
