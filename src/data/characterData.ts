@@ -1,4 +1,4 @@
-import type { Actor } from '@/types/battleTypes';
+import type { Actor, BattleActor } from '@/types/battleTypes';
 
 // モンスターデータ（敵キャラクター）
 const ENEMY_CHARACTERS: Actor[] = [
@@ -172,17 +172,6 @@ const ENEMY_CHARACTERS: Actor[] = [
   }
 ];
 
-// ランダムな敵チームを生成する
-export function generateRandomEnemyTeam(): Actor[] {
-  return ENEMY_CHARACTERS
-    .slice()
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 3)
-    .map(enemy => ({
-      ...enemy,
-      status: {} // 初期ステータスは空オブジェクト
-    }));
-}
 
 // プレイヤーキャラクターデータ
 const PLAYER_CHARACTERS: Actor[] = [
@@ -304,12 +293,30 @@ const PLAYER_CHARACTERS: Actor[] = [
   }
 ];
 
-// 初期プレイヤーチームを生成する
-export function createInitialPlayerTeam(): Actor[] {
-  return PLAYER_CHARACTERS
+
+// ランダムな敵チームを生成する
+export function generateRandomEnemyTeam(): BattleActor[] {
+  return ENEMY_CHARACTERS
+    .slice()
+    .sort(() => Math.random() - 0.5)
     .slice(0, 3)
-    .map(player => ({
-      ...player,
+    .map(actor => ({
+      actor: actor,
+      currentHp: actor.hp,
+      currentMp: actor.mp,
+      status: {} // 初期ステータスは空オブジェクト
+    }));
+}
+
+// 初期プレイヤーチームを生成する
+export function createInitialPlayerTeam(): BattleActor[] {
+  return PLAYER_CHARACTERS
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3)
+    .map(actor => ({
+      actor: actor,
+      currentHp: actor.hp,
+      currentMp: actor.mp,
       status: {} // 初期ステータスは空オブジェクト
     }));
 }
