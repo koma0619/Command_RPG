@@ -1,4 +1,4 @@
-import type { Actor } from '../types/battleTypes';
+import type { Actor } from '@/types/battleTypes';
 
 // モンスターデータ（敵キャラクター）
 const ENEMY_CHARACTERS: Actor[] = [

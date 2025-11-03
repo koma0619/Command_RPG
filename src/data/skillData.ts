@@ -1,4 +1,4 @@
-import type { Skill } from '../types/battleTypes';
+import type { Skill } from '@/types/battleTypes';
 
 // 基本スキル（全員が持っている）
 const baseSkills: Record<string, Skill> = {
