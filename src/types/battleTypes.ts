@@ -33,24 +33,30 @@ export interface BuffEffect {
 }
 
 export interface Actor {
-  id: string;
   name: string;
   emoji?: string;
-  hp: number;
-  mp: number;
-  maxHp: number;
-  maxMp: number;
+  hp: number;  // 最大HP
+  mp: number;  // 最大MP
   atk: number;
   def: number;
   spd: number;
   skills: string[]; // スキルIDリスト
   isEnemy: boolean;
-  status: {
-    [key: string]: {
-      value: number;
-      duration: number;
-      source?: string;
-    };
+}
+
+// バフ/デバフの効果定義
+interface StatusEffect {
+  value: number;    // 効果量
+  duration: number; // 持続時間（ターン数）
+}
+
+// 戦闘中のキャラクター状態
+export interface BattleActor {
+  actor: Actor;           // 元となるキャラクター
+  currentHp: number;      // 現在のHP
+  currentMp: number;      // 現在のMP
+  status: {              // バフ/デバフなどの一時的な状態異常
+    [key: string]: StatusEffect;
   };
 }
 
