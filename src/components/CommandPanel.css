@@ -1,0 +1,64 @@
+.command-panel {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 2px solid #666;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+.command-header {
+  color: white;
+  font-size: 1.2em;
+  margin-bottom: 15px;
+  text-align: center;
+  position: relative;
+}
+
+.command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.command-button,
+.target-button {
+  background-color: #333;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.command-button:hover:not(:disabled),
+.target-button:hover:not(:disabled) {
+  background-color: #444;
+  border-color: #888;
+}
+
+.command-button:disabled,
+.target-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-button {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #555;
+  color: white;
+  border: 1px solid #777;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background-color: #666;
+}

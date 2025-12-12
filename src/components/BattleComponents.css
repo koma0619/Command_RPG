@@ -1,0 +1,49 @@
+.battle-log {
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: 'MS Gothic', 'Consolas', monospace;
+}
+
+.battle-log p {
+  margin: 5px 0;
+  line-height: 1.2;
+}
+
+.enemy-list,
+.player-list {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.enemy-item,
+.player-item {
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 2px solid #666;
+  border-radius: 8px;
+  padding: 10px;
+  color: white;
+  min-width: 200px;
+  text-align: center;
+}
+
+.enemy-header,
+.player-header {
+  font-size: 1.2em;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #666;
+  padding-bottom: 5px;
+}
+
+.pending-action {
+  color: #ffd700;
+}
+
+.waiting {
+  color: #999;
+}

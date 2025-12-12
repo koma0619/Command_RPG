@@ -1,0 +1,111 @@
+.battle-command-panel {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  background: #f5f5f5;
+}
+
+.actor-status {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #fff;
+  border-radius: 0.25rem;
+}
+
+.actor-header {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.actor-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.command-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-list button {
+  padding: 0.5rem 1rem;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.skill-list button:hover:not(:disabled) {
+  background: #d0d0d0;
+}
+
+.skill-list button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.skill-detail {
+  padding: 0.5rem;
+  background: #fff;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skill-detail h4 {
+  margin: 0 0 0.5rem 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-buttons button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.action-buttons button:first-child {
+  background: #4caf50;
+  color: white;
+}
+
+.action-buttons button:last-child {
+  background: #f44336;
+  color: white;
+}
+
+/* ファミコン風のスタイリング */
+.battle-ui {
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.5;
+}
+
+.battle-ui .panel {
+  border: 4px solid #333;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.battle-log {
+  height: 100px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: #000;
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.battle-log p {
+  margin: 0;
+  padding: 0.25rem 0;
+}
