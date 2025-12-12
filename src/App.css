@@ -1,21 +1,47 @@
-#root {
-  max-width: 1280px;
+/* .game-container {
+  max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+  font-family: 'MS Gothic', 'Consolas', monospace;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.actor-select-button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px;
+  font-size: 1.1em;
+  background-color: #333;
+  color: white;
+  border: 1px solid #666;
+  border-radius: 4px;
+  cursor: pointer;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.actor-select-button:hover:not(:disabled) {
+  background-color: #444;
+  border-color: #888;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+
+.actor-select-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.execute-button {
+  width: 100%;
+  margin: 20px 0;
+  padding: 15px;
+  font-size: 1.2em;
+  background-color: #006400;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.execute-button:hover {
+  background-color: #008000;
 }
 
 @keyframes logo-spin {
@@ -39,4 +65,4 @@
 
 .read-the-docs {
   color: #888;
-}
+} */

@@ -13,7 +13,7 @@
         - 攻撃/ダメージ特技 → 敵を選択
         - 回復/バフ特技 → 味方を選択
         - 全体攻撃 → 自動で全体適用
-    - 相手チーム全滅で勝利　味方チーム全滅で敗北
+    - 勝利条件：相手チーム全滅
     - 5連勝でゲームクリア
 - ターン進行
     - 素早さ順で戦闘時の行動を行う
@@ -26,7 +26,7 @@
 ### キャラ
 
 - **ステータス**: HP、MP、攻撃力、防御力、素早さ
-    - HPは100前後くらいを基準として3～4発くらいの通常攻撃で倒されるバランス
+    - HPは60~100として並みの攻撃力4～5発くらいの通常攻撃で倒されるバランス
 - **属性**: なし
 - スキル: キャラ固有で1〜3個
     - 補助や回復役は多め
@@ -44,6 +44,12 @@
 消費MPやダメージ量などの具体的な数値は調整しながら決める
 
 攻撃呪文のダメージは定量。相手の防御力を貫通するイメージ。マジックバリアで対策可能。
+
+バフ・デバフの効果時間は3ターン。上書きによる効果持続はなし。バフがかかっている相手にデバフがかかった場合、効果を打ち消す。
+
+防御・仁王立ちは必ず先制する。疾風突きはその次に優先される。同じ優先度のスキルが選択された場合ランダム。
+
+HPの回復は最大HPまで
 
 - 攻撃呪文
     - メラミ　中ダメージ
@@ -78,6 +84,12 @@
 - 蘇生
     - ザオラル　蘇生
     - メガザル　味方全員を全回復&蘇生
+
+### 方針
+
+デバフは短期的な効果、バフは長期的な効果にする。攻撃力は短期向き、守備力は長期向きで効果の影響が出やすい。ヘナトス＞バイキルト、　スカラ＞ルカニ　にする。
+ミッドレンジ＜コントロール＜アグロ＜ミッドレンジの三竦みでバランスを取る
+攻撃・回復のバランス型＜バフ、デバフを的確に使い盤面をコントロール＜回復なし高火力技でアグレッシブに攻め切る
 
 ## キャラ
 
@@ -170,7 +182,11 @@
 - メーダ
     - リホイミ、スカラ
 
-### 追加したい要素
+### 戦闘ロジック
+
+- ターゲットが行動確定前に戦闘不能になっていた場合、ランダムなターゲットに変更する。回復する味方が戦闘不能になっていた場合は、自身をターゲットにする。
+
+### なくてもよいが追加したい要素
 
 - 勝利報酬で勇者を強くするシステム
     - ゲーム開始時に勇者のステータス割り振り、スキル選択を行う。
@@ -178,3 +194,158 @@
         - スキルはミラクルソード、ためる、メラミ、ホイミから選択。ここで戦士、武道家、魔法使い、僧侶ビルドが決まる。
     - 仲間を2人選択する。
     - 勝利報酬でステータス強化 or 新スキル習得（今のビルドに合うものがランダム表示）
+- 素早さが相手より高いほどクリティカル率Up
+- 特性（特技でも可）
+    - 身かわしアップ、AI2回行動、会心出やすい、瀕死で会心、メタルボディ、連続ため、自動MP回復、回復得意
+- ドラクエ9の必殺技システムで逆転要素
+    - 一喝、テンションブースト、妖精たちのポルカ、マスターゾーン、ゴスペルソング
+
+### 仕様書
+
+```jsx
+ファイル構造（ここまで大規模な構造にはしないためあくまで参考）
+src/
+├── domain/                          # ドメイン層（ビジネスロジック）
+│   ├── models/                      # エンティティと値オブジェクト
+│   │   ├── Character.ts            # キャラクターエンティティ
+│   │   ├── Skill.ts                # スキル値オブジェクト
+│   │   ├── Team.ts                 # チームエンティティ（集約ルート）
+│   │   ├── BattleState.ts          # バトル状態エンティティ
+│   │   ├── Action.ts               # アクション値オブジェクト
+│   │   ├── Status.ts               # ステータス値オブジェクト
+│   │   ├── Buff.ts                 # バフ/デバフ値オブジェクト
+│   │   └── BattleLog.ts            # バトルログ値オブジェクト
+│   │
+│   ├── services/                    # ドメインサービス
+│   │   ├── DamageCalculator.ts    # ダメージ計算ロジック
+│   │   ├── TargetSelector.ts      # ターゲット選択ロジック
+│   │   ├── TurnOrderResolver.ts   # ターン順解決
+│   │   ├── SkillExecutor.ts       # スキル実行ロジック
+│   │   └── BattleJudge.ts         # 勝敗判定
+│   │
+│   ├── repositories/                # リポジトリインターフェース
+│   │   ├── ICharacterRepository.ts
+│   │   ├── ISkillRepository.ts
+│   │   └── IBattleStateRepository.ts
+│   │
+│   └── events/                      # ドメインイベント
+│       ├── CharacterDefeatedEvent.ts
+│       ├── BattleWonEvent.ts
+│       ├── SkillUsedEvent.ts
+│       └── DamageDealtEvent.ts
+│
+├── application/                     # アプリケーション層（ユースケース）
+│   ├── usecases/
+│   │   ├── SelectTeamUseCase.ts    # チーム選択
+│   │   ├── StartBattleUseCase.ts   # 戦闘開始
+│   │   ├── ExecuteCommandUseCase.ts # コマンド実行
+│   │   ├── SelectTargetUseCase.ts  # ターゲット選択
+│   │   ├── ExecuteTurnUseCase.ts   # ターン実行
+│   │   └── NextBattleUseCase.ts    # 次の戦闘へ
+│   │
+│   ├── dto/                         # データ転送オブジェクト
+│   │   ├── CharacterDTO.ts
+│   │   ├── BattleStateDTO.ts
+│   │   └── CommandDTO.ts
+│   │
+│   └── services/                    # アプリケーションサービス
+│       ├── EnemyAIService.ts       # 敵AI
+│       └── BattleOrchestrator.ts   # 戦闘全体の制御
+│
+├── infrastructure/                  # インフラ層（技術的詳細）
+│   ├── repositories/                # リポジトリ実装
+│   │   ├── InMemoryCharacterRepository.ts
+│   │   ├── InMemorySkillRepository.ts
+│   │   └── InMemoryBattleStateRepository.ts
+│   │
+│   ├── data/                        # マスターデータ
+│   │   ├── characterData.ts        # キャラクター定義
+│   │   └── skillData.ts            # スキル定義
+│   │
+│   └── persistence/                 # 永続化（将来の拡張用）
+│       └── LocalStorageAdapter.ts
+│
+├── presentation/                    # プレゼンテーション層（UI）
+│   ├── components/                  # Reactコンポーネント
+│   │   ├── BattleGame.tsx          # メインコンポーネント
+│   │   ├── TeamSelectionScreen.tsx
+│   │   ├── BattleScreen.tsx
+│   │   ├── CharacterCard.tsx
+│   │   ├── CommandPanel.tsx
+│   │   ├── SkillSelector.tsx
+│   │   ├── BattleLog.tsx
+│   │   ├── HPBar.tsx
+│   │   ├── MPBar.tsx
+│   │   └── ResultScreen.tsx
+│   │
+│   ├── hooks/                       # カスタムフック
+│   │   ├── useBattle.ts            # バトル状態管理
+│   │   ├── useTeamSelection.ts     # チーム選択管理
+│   │   └── useCommand.ts           # コマンド入力管理
+│   │
+│   ├── viewmodels/                  # ビューモデル
+│   │   ├── BattleViewModel.ts
+│   │   └── CharacterViewModel.ts
+│   │
+│   └── presenters/                  # プレゼンター
+│       ├── BattlePresenter.ts
+│       └── CommandPresenter.ts
+│
+├── shared/                          # 共通
+│   ├── types/                       # 型定義
+│   │   ├── GameState.ts
+│   │   ├── SkillType.ts
+│   │   └── TargetType.ts
+│   │
+│   ├── constants/                   # 定数
+│   │   └── gameConstants.ts
+│   │
+│   └── utils/                       # ユーティリティ
+│       ├── random.ts
+│       └── calculation.ts
+│
+└── App.tsx                          # エントリーポイント
+```
+
+## 📁 各層の責務
+
+### **Domain層（ドメイン層）**
+
+- **役割**: ビジネスルールとゲームのコアロジック
+- **特徴**: フレームワーク非依存、最も重要な層
+- **例**:
+    - `Character.ts`: HPが0になったら戦闘不能になる
+    - `DamageCalculator.ts`: ダメージ計算式
+    - `BattleJudge.ts`: 勝敗条件の判定
+
+### **Application層（アプリケーション層）**
+
+- **役割**: ユースケースの実装、ドメインの組み合わせ
+- **特徴**: トランザクション境界、フロー制御
+- **例**:
+    - `ExecuteCommandUseCase.ts`: コマンド→ターゲット選択→実行
+    - `EnemyAIService.ts`: 敵の行動決定
+
+### **Infrastructure層（インフラ層）**
+
+- **役割**: 技術的な実装詳細
+- **特徴**: データアクセス、外部サービス連携
+- **例**:
+    - `InMemoryCharacterRepository.ts`: キャラデータの取得
+    - `characterData.ts`: マスターデータ
+
+### **Presentation層（プレゼンテーション層）**
+
+- **役割**: ユーザーインターフェース
+- **特徴**: React、状態管理、イベントハンドリング
+- **例**:
+    - `BattleScreen.tsx`: 戦闘画面の表示
+    - `useBattle.ts`: 戦闘状態の管理
+
+## 🔑 重要なポイント
+
+1. **依存の方向**: Presentation → Application → Domain ← Infrastructure
+2. **Domain層は他の層に依存しない**（依存性逆転の原則）
+3. **集約ルート**: `Team`や`BattleState`が集約の境界
+4. **ドメインイベント**: 状態変化を他の部分に通知
+5. **リポジトリパターン**: データアクセスの抽象化
