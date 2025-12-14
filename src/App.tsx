@@ -6,17 +6,11 @@ import { BattleLog, EnemyTeamDisplay, PlayerTeamDisplay } from './components/Bat
 import { CommandPanel } from './components/CommandPanel';
 import type { BattleActor, SkillTargetType } from './types/battleTypes';
 import type { SkillId } from './types/skillIds';
-import { determineTurnOrder } from './engine/turnOrder';
-import { resolveActions } from './engine/actionResolver';
+import type { QueuedAction } from './types/queuedAction';
 import { StatusManager } from './engine/statusManager';
 import { generateRandomEnemyTeam, createInitialPlayerTeam } from './data/characterData';
 import { SKILLS } from './data/skillData';
-
-interface QueuedAction {
-  actorId: string;
-  skillId: SkillId;
-  targetIds?: string[];
-}
+import { executeBattleTurn, ensureAllPlayersQueued } from './engine/battleFlow';
 
 export default function App(): React.ReactElement {
   const statusManager = React.useRef(new StatusManager());
@@ -111,98 +105,35 @@ export default function App(): React.ReactElement {
   };
 
   const executeTurn = () => {
-    const alivePlayers = playerTeam.filter(p => p.currentHp > 0);
-    if (actionQueue.length < alivePlayers.length) {
-      logMessage('全員のコマンドを入力してください');
+    const validationMessage = ensureAllPlayersQueued(playerTeam, actionQueue);
+    if (validationMessage) {
+      logMessage(validationMessage);
       return;
     }
 
-    const mpSpent = new Map<string, number>();
-
-    const buildAction = (ba: BattleActor, skillId: SkillId, targetIds?: string[]) => {
-      const skill = SKILLS[skillId];
-      const cost = skill.mpCost ?? 0;
-      const mpAfter = Math.max(0, ba.currentMp - cost);
-      mpSpent.set(ba.actor.name, cost);
-      return {
-        action: {
-          actor: { ...ba.actor, hp: ba.currentHp, mp: mpAfter },
-          skillName: skill.id,
-          targetIds,
-        },
-        actorAfterMp: mpAfter,
-      };
-    };
-
-    const playerActions = actionQueue.map(entry => {
-      const ba = [...playerTeam, ...enemyTeam].find(a => a.actor.name === entry.actorId);
-      if (!ba) return null;
-      return buildAction(ba, entry.skillId, entry.targetIds);
-    }).filter((a): a is NonNullable<typeof a> => a !== null);
-
-    const aliveEnemyTargets = playerTeam.filter(p => p.currentHp > 0);
-    const enemyActions = enemyTeam
-      .filter(e => e.currentHp > 0)
-      .map(enemy => {
-        const target = aliveEnemyTargets.length > 0 ? aliveEnemyTargets[Math.floor(Math.random() * aliveEnemyTargets.length)] : null;
-        return buildAction(enemy, 'attack', target ? [target.actor.name] : undefined);
-      });
-
-    const allActionObjects = [...playerActions, ...enemyActions];
-    const actionsForOrder = allActionObjects.map(a => a.action);
-
-    const turnOrder = determineTurnOrder(actionsForOrder);
-
-    const allActorsForResolution = [...playerTeam, ...enemyTeam].map(ba => {
-      const cost = mpSpent.get(ba.actor.name) ?? 0;
-      return { ...ba.actor, hp: ba.currentHp, mp: Math.max(0, ba.currentMp - cost) };
+    const outcome = executeBattleTurn({
+      playerTeam,
+      enemyTeam,
+      actionQueue,
+      statusManager: statusManager.current,
     });
 
-    const results = resolveActions(turnOrder, allActorsForResolution, statusManager.current);
-
-    results.events.forEach(event => {
+    outcome.events.forEach(event => {
       const skillLabel = SKILLS[event.skill]?.name ?? event.skill;
       const detail = event.detail ? `→${event.detail}` : '';
       logMessage(`${event.actorName}の${skillLabel}${detail}`);
     });
 
-    const resultMap = new Map(results.actors.map(a => [a.name, a]));
-
-    const nextPlayerTeam = playerTeam.map(ba => {
-      const updated = resultMap.get(ba.actor.name);
-      const mpCost = mpSpent.get(ba.actor.name) ?? 0;
-      return {
-        ...ba,
-        currentHp: updated?.hp ?? ba.currentHp,
-        currentMp: Math.max(0, (updated?.mp ?? ba.currentMp) - mpCost),
-      };
-    });
-
-    const nextEnemyTeam = enemyTeam.map(ba => {
-      const updated = resultMap.get(ba.actor.name);
-      const mpCost = mpSpent.get(ba.actor.name) ?? 0;
-      return {
-        ...ba,
-        currentHp: updated?.hp ?? ba.currentHp,
-        currentMp: Math.max(0, (updated?.mp ?? ba.currentMp) - mpCost),
-      };
-    });
-
-    statusManager.current.tickTurn();
-
-    setPlayerTeam(nextPlayerTeam);
-    setEnemyTeam(nextEnemyTeam);
+    setPlayerTeam(outcome.nextPlayerTeam);
+    setEnemyTeam(outcome.nextEnemyTeam);
     setActionQueue([]);
     setPendingActions(new Map());
     setSelectedActor(null);
     setTargetPrompt(null);
 
-    const enemiesDefeated = nextEnemyTeam.every(e => e.currentHp <= 0);
-    const playersDefeated = nextPlayerTeam.every(p => p.currentHp <= 0);
-
-    if (enemiesDefeated) {
+    if (outcome.enemiesDefeated) {
       logMessage('🎉 勝利！リセットして再戦できます');
-    } else if (playersDefeated) {
+    } else if (outcome.playersDefeated) {
       logMessage('😱 全滅...リセットして再挑戦してください');
     }
   };
