@@ -6,12 +6,6 @@ import type { Action } from './turnOrder';
 // StatusEffect 型は直接は使わないが将来の拡張のために保留（未使用を避けるためコメントアウト）
 // import type { StatusEffect } from './statusManager';
 
-/** 逆効果マップ: デバフが付与されるときに相手のバフを解除するための対応表 */
-const opposite: Record<string, string | undefined> = {
-  atk_down: 'atk_up',
-  def_down: 'def_up'
-};
-
 export type ResolveEvent = {
   actorId: string;
   actorName: string;
@@ -76,16 +70,28 @@ export const resolveActions = (
 
     if (skill.type === 'debuff' || skill.type === 'attack_debuff') {
       for (const t of targets) {
-        // check and remove opposite buff first
         if (skill.effect) {
-          const opp = opposite[skill.effect.key];
-          if (opp && sm.hasEffect(t.name, { ...skill.effect, key: opp } as any)) {
-            const removed = sm.removeEffect(t.name, opp);
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'remove_buff', value: removed.length, detail: opp });
+          const conflictKind = skill.effect.kind === 'debuff' ? 'buff' : skill.effect.kind === 'buff' ? 'debuff' : undefined;
+          if (conflictKind) {
+            const removed = sm.removeEffect(t.name, skill.effect.key, conflictKind);
+            if (removed.length > 0) {
+              events.push({
+                actorId: attacker.name,
+                actorName: attacker.name,
+                skill: act.skillName,
+                targetIds: [t.name],
+                kind: 'remove_buff',
+                value: removed.length,
+                detail: skill.effect.key
+              });
+            }
+          }
+
+          const res = sm.addEffectBySkill(t.name, act.skillName);
+          if (res.applied) {
+            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'apply_buff' });
           } else {
-            const res = sm.addEffectBySkill(t.name, act.skillName);
-            if (res.applied) events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'apply_buff' });
-            else events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'other', detail: res.reason });
+            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'other', detail: res.reason });
           }
         }
       }

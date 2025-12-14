@@ -89,11 +89,11 @@ export class StatusManager {
   }
 
   /** 指定の effect タイプ（例: 'atk_up'）を削除する */
-  public removeEffect(ownerId: string, effectKey: string): StatusEffect[] {
+  public removeEffect(ownerId: string, effectKey: string, kind?: BuffEffect['kind']): StatusEffect[] {
     const arr = this.effects.get(ownerId) || [];
     const removed: StatusEffect[] = [];
     const remaining = arr.filter(e => {
-      if (e.effect.key === effectKey) {
+      if (e.effect.key === effectKey && (!kind || e.effect.kind === kind)) {
         removed.push(e);
         return false;
       }
