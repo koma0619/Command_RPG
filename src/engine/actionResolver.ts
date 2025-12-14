@@ -4,6 +4,8 @@ import { SKILLS } from '../data/skillData';
 export interface Action {
   actor: Actor;
   skillName: string;
+  /** Optional explicit targets (actor names). Falls back to auto-pick if empty. */
+  targetIds?: string[];
 }
 import StatusManager from './statusManager';
 // StatusEffect 型は直接は使わないが将来の拡張のために保留（未使用を避けるためコメントアウト）
@@ -40,7 +42,13 @@ export const resolveActions = (
   const actorMap = new Map<string, Actor>();
   for (const a of actors) actorMap.set(a.name, a);
 
-  const pickTarget = (user: Actor, targetType: string): Actor[] => {
+  const pickTarget = (user: Actor, targetType: string, override?: string[]): Actor[] => {
+    if (override && override.length > 0) {
+      return override
+        .map(id => actorMap.get(id))
+        .filter((t): t is Actor => !!t && t.hp > 0);
+    }
+
     const all = Array.from(actorMap.values());
     const enemies = all.filter(x => x.isEnemy !== user.isEnemy && x.hp > 0);
     const allies = all.filter(x => x.isEnemy === user.isEnemy && x.hp > 0);
@@ -63,7 +71,7 @@ export const resolveActions = (
       continue;
     }
 
-    const targets = pickTarget(attacker, skill.target);
+    const targets = pickTarget(attacker, skill.target, act.targetIds);
 
     if (skill.type === 'buff') {
       // apply buff to targets

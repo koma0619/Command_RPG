@@ -12,8 +12,8 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 1,
     isEnemy: true,
     skills: [
-      'ninoudate',
-      'kabuwari'
+      'niou_dachi',
+      'kabuto_wari'
     ]
   },
   {
@@ -27,7 +27,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     isEnemy: true,
     skills: [
       'otakebi',
-      'yaiba_kudaki'
+      'yaiba_kuda'
     ]
   },
   {
@@ -54,8 +54,8 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 5,
     isEnemy: true,
     skills: [
-      'shipputsuki',
-      'hayabusagiri'
+      'shippu_tsuki',
+      'hayabusa_giri'
     ]
   },
   {
@@ -68,8 +68,8 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 3,
     isEnemy: true,
     skills: [
-      'sutemi_attack',
-      'nagisabari'
+      'sutemi_kogeki',
+      'nagi_harai'
     ]
   },
   {
@@ -83,7 +83,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     isEnemy: true,
     skills: [
       'tameru',
-      'samidare_zuki'
+      'samidare_giri'
     ]
   },
   {
@@ -96,8 +96,8 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 4,
     isEnemy: true,
     skills: [
-      'merami',
-      'merazoma'
+      'mera_mi',
+      'mera_zoma'
     ]
   },
   {
@@ -110,8 +110,8 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 4,
     isEnemy: true,
     skills: [
-      'iora',
-      'ionazun'
+      'io_ra',
+      'io_nazun'
     ]
   },
   {
@@ -124,8 +124,8 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 3,
     isEnemy: true,
     skills: [
-      'bikilt',
-      'henatos'
+      'bike_ruto',
+      'hena_tos'
     ]
   },
   {
@@ -139,7 +139,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     isEnemy: true,
     skills: [
       'hoimi',
-      'magicbarrier'
+      'magic_barrier'
     ]
   },
   {
@@ -167,7 +167,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     isEnemy: true,
     skills: [
       'rihoimi',
-      'scara'
+      'sca_ra'
     ]
   }
 ];
@@ -185,8 +185,8 @@ const PLAYER_CHARACTERS: Actor[] = [
     spd: 2,
     isEnemy: false,
     skills: [
-      'ninoudate',
-      'kabuwari'
+      'niou_dachi',
+      'kabuto_wari'
     ]
   },
   {
@@ -199,7 +199,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     spd: 3,
     isEnemy: false,
     skills: [
-      'yaiba_kudaki',
+      'yaiba_kuda',
       'otakebi'
     ]
   },
@@ -213,8 +213,8 @@ const PLAYER_CHARACTERS: Actor[] = [
     spd: 5,
     isEnemy: false,
     skills: [
-      'shipputsuki',
-      'hayabusagiri'
+      'shippu_tsuki',
+      'hayabusa_giri'
     ]
   },
   {
@@ -227,8 +227,8 @@ const PLAYER_CHARACTERS: Actor[] = [
     spd: 3,
     isEnemy: false,
     skills: [
-      'sutemi_attack',
-      'nagisabari'
+      'sutemi_kogeki',
+      'nagi_harai'
     ]
   },
   {
@@ -241,9 +241,9 @@ const PLAYER_CHARACTERS: Actor[] = [
     spd: 4,
     isEnemy: false,
     skills: [
-      'merami',
-      'merazoma',
-      'piora'
+      'mera_mi',
+      'mera_zoma',
+      'pio_ra'
     ]
   },
   {
@@ -256,9 +256,9 @@ const PLAYER_CHARACTERS: Actor[] = [
     spd: 4,
     isEnemy: false,
     skills: [
-      'iora',
+      'io_ra',
       'rukani',
-      'henatos'
+      'hena_tos'
     ]
   },
   {
@@ -272,7 +272,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     isEnemy: false,
     skills: [
       'behomarah',
-      'scara',
+      'sca_ra',
       'zaoral'
     ]
   },
@@ -287,8 +287,8 @@ const PLAYER_CHARACTERS: Actor[] = [
     isEnemy: false,
     skills: [
       'hoimi',
-      'bikilt',
-      'magicbarrier'
+      'bike_ruto',
+      'magic_barrier'
     ]
   }
 ];

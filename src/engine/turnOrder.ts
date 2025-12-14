@@ -5,6 +5,7 @@ import { SKILLS } from '../data/skillData';
 export interface Action {
   actor: Actor;
   skillName: string;
+  targetIds?: string[];
 }
 
 /** スキル名から優先度を取得（未定義は 0）。 */

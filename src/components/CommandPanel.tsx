@@ -1,9 +1,9 @@
 import React from 'react';
-import type { Actor } from '../types/battleTypes';
+import type { BattleActor } from '../types/battleTypes';
 import { SKILLS } from '../data/skillData';
 
 interface CommandPanelProps {
-  actor: Actor | null;
+  actor: BattleActor | null;
   onSkillSelect: (skillId: string) => void;
   onActionComplete: () => void;
   disabled: boolean;
@@ -22,7 +22,7 @@ export function CommandPanel({
   return (
     <div className="command-panel">
       <div className="command-header">
-        {actor.emoji} {actor.name}のターン
+        {actor.actor.emoji} {actor.actor.name}のターン
       </div>
       <div className="command-grid">
         <button
@@ -39,18 +39,20 @@ export function CommandPanel({
         >
           🛡️ 防御
         </button>
-        {actor.skills.map((skillId) => {
+        {actor.actor.skills.map((skillId) => {
           const skill = SKILLS[skillId];
+          if (!skill) return null;
+          const hasMp = actor.currentMp >= skill.mpCost;
           return (
             <button
               key={skillId}
               onClick={() => onSkillSelect(skillId)}
               className="command-button"
-              disabled={disabled || actor.mp < skill.mpCost}
+              disabled={disabled || !hasMp}
               title={`${skill.name} (消費MP: ${skill.mpCost})\n${skill.description}`}
             >
               {skill.name}
-              {actor.mp < skill.mpCost && ' (MP不足)'}
+              {!hasMp && ' (MP不足)'}
             </button>
           );
         })}
@@ -60,7 +62,7 @@ export function CommandPanel({
         onClick={onActionComplete}
         disabled={disabled}
       >
-        行動開始
+        キャンセル
       </button>
     </div>
   );
