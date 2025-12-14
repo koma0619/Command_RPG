@@ -1,15 +1,16 @@
 import type { Actor, Skill } from '../types/battleTypes';
+import type { SkillId } from '../types/skillIds';
 import { SKILLS } from '../data/skillData';
 
 /** Action はそのターンに行う行動（誰が何を行うか）を表します。 */
 export interface Action {
   actor: Actor;
-  skillName: string;
+  skillName: SkillId;
   targetIds?: string[];
 }
 
 /** スキル名から優先度を取得（未定義は 0）。 */
-export const getSkillPriority = (skillName: string): number => {
+export const getSkillPriority = (skillName: SkillId): number => {
   const s: Skill | undefined = SKILLS[skillName];
   if (!s) return 0;
   return typeof s.priority === 'number' ? s.priority : 0;

@@ -1,7 +1,10 @@
 import type { Skill } from '@/types/battleTypes';
+import type { SkillDictionary } from '@/types/skillIds';
+
+type PartialSkillDictionary = Partial<SkillDictionary<Skill>>;
 
 // 基本スキル（全員が持っている）
-const baseSkills: Record<string, Skill> = {
+const baseSkills: PartialSkillDictionary = {
     attack: {
         id: 'attack',
         name: '攻撃',
@@ -29,7 +32,7 @@ const baseSkills: Record<string, Skill> = {
 };
 
 // 攻撃呪文
-const attackMagic: Record<string, Skill> = {
+const attackMagic: PartialSkillDictionary = {
     mera_mi: {
         id: 'mera_mi',
         name: 'メラミ',
@@ -69,7 +72,7 @@ const attackMagic: Record<string, Skill> = {
 };
 
 // バフ/デバフ呪文
-const buffDebuffMagic: Record<string, Skill> = {
+const buffDebuffMagic: PartialSkillDictionary = {
     bike_ruto: {
         id: 'bike_ruto',
         name: 'バイキルト',
@@ -123,7 +126,7 @@ const buffDebuffMagic: Record<string, Skill> = {
         target: 'ally_all',
         effect: {
             kind: 'buff',
-            key: 'magic_resist',
+            key: 'magic_shield',
             value: 0.5,
             duration: 3
         },
@@ -165,7 +168,7 @@ const buffDebuffMagic: Record<string, Skill> = {
 };
 
 // 物理攻撃特技
-const attackSkills: Record<string, Skill> = {
+const attackSkills: PartialSkillDictionary = {
     kabuto_wari: {
         id: 'kabuto_wari',
         name: '兜割り',
@@ -270,7 +273,7 @@ const attackSkills: Record<string, Skill> = {
 };
 
 // 補助特技
-const supportSkills: Record<string, Skill> = {
+const supportSkills: PartialSkillDictionary = {
     niou_dachi: {
         id: 'niou_dachi',
         name: '仁王立ち',
@@ -318,7 +321,7 @@ const supportSkills: Record<string, Skill> = {
 };
 
 // 回復呪文
-const healingMagic: Record<string, Skill> = {
+const healingMagic: PartialSkillDictionary = {
     hoimi: {
         id: 'hoimi',
         name: 'ホイミ',
@@ -355,7 +358,7 @@ const healingMagic: Record<string, Skill> = {
 };
 
 // 蘇生呪文
-const reviveMagic: Record<string, Skill> = {
+const reviveMagic: PartialSkillDictionary = {
     zaoral: {
         id: 'zaoral',
         name: 'ザオラル',
@@ -377,7 +380,7 @@ const reviveMagic: Record<string, Skill> = {
 };
 
 // 全スキルをまとめる
-export const SKILLS: Record<string, Skill> = {
+export const SKILLS = {
     ...baseSkills,
     ...attackMagic,
     ...buffDebuffMagic,
@@ -385,4 +388,4 @@ export const SKILLS: Record<string, Skill> = {
     ...supportSkills,
     ...healingMagic,
     ...reviveMagic
-};
+} satisfies SkillDictionary<Skill>;

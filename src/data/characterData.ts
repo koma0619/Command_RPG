@@ -40,7 +40,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     spd: 2,
     isEnemy: true,
     skills: [
-      'megazaru',
+      'mega_zaru',
       'miracle_sword'
     ]
   },
@@ -257,7 +257,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     isEnemy: false,
     skills: [
       'io_ra',
-      'rukani',
+      'ruka_ni',
       'hena_tos'
     ]
   },

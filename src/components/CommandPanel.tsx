@@ -1,10 +1,11 @@
 import React from 'react';
 import type { BattleActor } from '../types/battleTypes';
+import type { SkillId } from '../types/skillIds';
 import { SKILLS } from '../data/skillData';
 
 interface CommandPanelProps {
   actor: BattleActor | null;
-  onSkillSelect: (skillId: string) => void;
+  onSkillSelect: (skillId: SkillId) => void;
   onActionComplete: () => void;
   disabled: boolean;
 }

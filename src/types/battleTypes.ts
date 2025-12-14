@@ -1,3 +1,5 @@
+import type { SkillId } from './skillIds';
+
 export type SkillTargetType =
   | 'enemy_single' // 敵単体
   | 'enemy_all' // 敵全体
@@ -40,7 +42,7 @@ export interface Actor {
   atk: number;
   def: number;
   spd: number;
-  skills: string[]; // スキルIDリスト
+  skills: SkillId[]; // スキルIDリスト
   isEnemy: boolean;
 }
 
@@ -61,7 +63,7 @@ export interface BattleActor {
 }
 
 export interface Skill {
-  id: string; // スキルID（一意な識別子）
+  id: SkillId; // スキルID（一意な識別子）
   name: string; // スキル名
   type: SkillType; // スキルの種類
   mpCost: number; // 消費MP

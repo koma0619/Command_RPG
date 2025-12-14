@@ -1,19 +1,19 @@
 import React from 'react';
 import type { Actor } from '../types/battleTypes';
+import type { SkillId } from '../types/skillIds';
 import { SKILLS } from '../data/skillData';
 
 interface Props {
   player: Actor;
-  onSelectCommand: (actorName: string, skillName: string) => void;
+  onSelectCommand: (actorName: string, skillName: SkillId) => void;
 }
 
 export default function BattleCommandPanel({ player, onSelectCommand }: Props): React.ReactElement {
-  const [selectedSkill, setSelectedSkill] = React.useState<string | null>(null);
+  const [selectedSkill, setSelectedSkill] = React.useState<SkillId | null>(null);
 
   const skillList = React.useMemo(() => {
-    if (!player.name || !(player.name in SKILLS)) return ['防御'];
-    return [player.name, '防御']; // プレイヤー固有スキルと防御
-  }, [player.name]);
+    return ['defend', ...player.skills] as SkillId[];
+  }, [player.skills]);
 
   return (
     <div className="battle-command-panel">

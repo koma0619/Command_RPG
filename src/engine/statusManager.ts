@@ -1,4 +1,5 @@
 import type { BuffEffect } from '../types/battleTypes';
+import type { SkillId } from '../types/skillIds';
 import { SKILLS } from '../data/skillData';
 
 /** ステータス効果（バフ/デバフ）の内部表現 */
@@ -30,7 +31,7 @@ export class StatusManager {
    * スキル名を元に効果を追加するユーティリティ。
    * stackable=false の場合、同一 effect が既にあると追加は失敗して false を返す。
    */
-  public addEffectBySkill(ownerId: string, skillName: string): { applied: boolean; reason?: string } {
+  public addEffectBySkill(ownerId: string, skillName: SkillId): { applied: boolean; reason?: string } {
     const s = SKILLS[skillName];
     if (!s) return { applied: false, reason: 'skill_not_found' };
     if (!s.effect) return { applied: false, reason: 'skill_has_no_effect' };

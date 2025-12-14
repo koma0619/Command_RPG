@@ -1,13 +1,8 @@
-import type { Actor } from '../types/battleTypes';
+import type { Actor, Skill } from '../types/battleTypes';
+import type { SkillId } from '../types/skillIds';
 import { SKILLS } from '../data/skillData';
-
-export interface Action {
-  actor: Actor;
-  skillName: string;
-  /** Optional explicit targets (actor names). Falls back to auto-pick if empty. */
-  targetIds?: string[];
-}
 import StatusManager from './statusManager';
+import type { Action } from './turnOrder';
 // StatusEffect 型は直接は使わないが将来の拡張のために保留（未使用を避けるためコメントアウト）
 // import type { StatusEffect } from './statusManager';
 
@@ -20,7 +15,7 @@ const opposite: Record<string, string | undefined> = {
 export type ResolveEvent = {
   actorId: string;
   actorName: string;
-  skill: string;
+  skill: SkillId;
   targetIds: string[];
   kind: 'damage' | 'heal' | 'apply_buff' | 'remove_buff' | 'revive' | 'miss' | 'other';
   value?: number;
@@ -42,7 +37,7 @@ export const resolveActions = (
   const actorMap = new Map<string, Actor>();
   for (const a of actors) actorMap.set(a.name, a);
 
-  const pickTarget = (user: Actor, targetType: string, override?: string[]): Actor[] => {
+  const pickTarget = (user: Actor, targetType: Skill['target'], override?: string[]): Actor[] => {
     if (override && override.length > 0) {
       return override
         .map(id => actorMap.get(id))
@@ -66,10 +61,6 @@ export const resolveActions = (
     if (!attacker || attacker.hp <= 0) continue; // dead can't act
 
     const skill = SKILLS[act.skillName];
-    if (!skill) {
-      events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [], kind: 'other', detail: 'skill_not_found' });
-      continue;
-    }
 
     const targets = pickTarget(attacker, skill.target, act.targetIds);
 

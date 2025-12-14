@@ -5,6 +5,7 @@ import './components/CommandPanel.css';
 import { BattleLog, EnemyTeamDisplay, PlayerTeamDisplay } from './components/BattleComponents';
 import { CommandPanel } from './components/CommandPanel';
 import type { BattleActor, SkillTargetType } from './types/battleTypes';
+import type { SkillId } from './types/skillIds';
 import { determineTurnOrder } from './engine/turnOrder';
 import { resolveActions } from './engine/actionResolver';
 import { StatusManager } from './engine/statusManager';
@@ -13,7 +14,7 @@ import { SKILLS } from './data/skillData';
 
 interface QueuedAction {
   actorId: string;
-  skillId: string;
+  skillId: SkillId;
   targetIds?: string[];
 }
 
@@ -25,7 +26,7 @@ export default function App(): React.ReactElement {
   const [actionQueue, setActionQueue] = React.useState<QueuedAction[]>([]);
   const [pendingActions, setPendingActions] = React.useState<Map<string, string>>(new Map());
   const [selectedActor, setSelectedActor] = React.useState<BattleActor | null>(null);
-  const [targetPrompt, setTargetPrompt] = React.useState<{ actorId: string; skillId: string; targetType: SkillTargetType } | null>(null);
+  const [targetPrompt, setTargetPrompt] = React.useState<{ actorId: string; skillId: SkillId; targetType: SkillTargetType } | null>(null);
 
   const logMessage = (message: string) => {
     setBattleLog(prev => [...prev, message]);
@@ -42,7 +43,7 @@ export default function App(): React.ReactElement {
     statusManager.current.clear();
   };
 
-  const enqueueAction = (actorId: string, skillId: string, targetIds?: string[]) => {
+  const enqueueAction = (actorId: string, skillId: SkillId, targetIds?: string[]) => {
     setActionQueue(prev => [...prev, { actorId, skillId, targetIds }]);
     setPendingActions(prev => {
       const next = new Map(prev);
@@ -53,14 +54,14 @@ export default function App(): React.ReactElement {
     setTargetPrompt(null);
   };
 
-  const handleSkillSelect = (skillId: string) => {
+  const handleSkillSelect = (skillId: SkillId) => {
     if (!selectedActor) return;
     if (actionQueue.some(a => a.actorId === selectedActor.actor.name)) {
       logMessage(`${selectedActor.actor.name}は既に行動を選択済みです`);
       return;
     }
 
-    const skill = SKILLS[skillId] ?? SKILLS.attack;
+    const skill = SKILLS[skillId];
     const cost = skill.mpCost ?? 0;
     if (selectedActor.currentMp < cost) {
       logMessage(`${selectedActor.actor.name}はMPが足りない`);
@@ -118,8 +119,8 @@ export default function App(): React.ReactElement {
 
     const mpSpent = new Map<string, number>();
 
-    const buildAction = (ba: BattleActor, skillId: string, targetIds?: string[]) => {
-      const skill = SKILLS[skillId] ?? SKILLS.attack;
+    const buildAction = (ba: BattleActor, skillId: SkillId, targetIds?: string[]) => {
+      const skill = SKILLS[skillId];
       const cost = skill.mpCost ?? 0;
       const mpAfter = Math.max(0, ba.currentMp - cost);
       mpSpent.set(ba.actor.name, cost);
