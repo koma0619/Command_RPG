@@ -27,13 +27,25 @@ interface EnemyTeamDisplayProps {
   enemies: BattleActor[];
 }
 
+function HpBar({ current, max }: { current: number; max: number }): React.ReactElement {
+  return (
+    <div className="hp-meter">
+      <meter value={current} min={0} max={max} low={max * 0.25} high={max * 0.5} optimum={max}>
+        {current} / {max}
+      </meter>
+      <span className="hp-meter-text">HP {current} / {max}</span>
+    </div>
+  );
+}
+
 export function EnemyTeamDisplay({ enemies }: EnemyTeamDisplayProps): React.ReactElement {
   return (
     <div className="enemy-list">
       {enemies.map((e) => (
         <div key={e.actor.name} className="enemy-item">
           <div className="enemy-header">{e.actor.emoji} {e.actor.name}</div>
-          <div>HP: {e.currentHp} / {e.actor.hp} MP: {e.currentMp} / {e.actor.mp}</div>
+          <HpBar current={e.currentHp} max={e.actor.hp} />
+          <div>MP: {e.currentMp} / {e.actor.mp}</div>
           <div>ATK: {e.actor.atk} DEF: {e.actor.def} SPD: {e.actor.spd}</div>
         </div>
       ))}
@@ -52,7 +64,8 @@ export function PlayerTeamDisplay({ players, pendingActions }: PlayerTeamDisplay
       {players.map((p) => (
         <div key={p.actor.name} className="player-item">
           <div className="player-header">{p.actor.emoji} {p.actor.name}</div>
-          <div>HP: {p.currentHp} / {p.actor.hp} MP: {p.currentMp} / {p.actor.mp}</div>
+          <HpBar current={p.currentHp} max={p.actor.hp} />
+          <div>MP: {p.currentMp} / {p.actor.mp}</div>
           <div>
             {pendingActions.has(p.actor.name) ? (
               <span className="pending-action">⏳ {pendingActions.get(p.actor.name)}</span>

@@ -47,3 +47,7 @@
 .waiting {
   color: #999;
 }
+
+.hp-meter meter {
+  width: 100%;
+}
