@@ -205,7 +205,7 @@ export default function App(): React.ReactElement {
       )}
 
       {actionQueue.length === alivePlayersCount && alivePlayersCount > 0 && (
-        <button 
+        <button
           onClick={executeTurn}
           className="execute-button"
         >

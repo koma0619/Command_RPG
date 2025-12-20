@@ -388,4 +388,4 @@ export const SKILLS = {
     ...supportSkills,
     ...healingMagic,
     ...reviveMagic
-} satisfies SkillDictionary<Skill>;
+} as SkillDictionary<Skill>;
