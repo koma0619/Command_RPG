@@ -103,16 +103,14 @@ const mapActorsForResolution = (
 
 const applyResultsToTeam = (
   team: BattleActor[],
-  resultMap: Map<string, { hp: number; mp: number }>,
-  mpSpent: Map<string, number>
+  resultMap: Map<string, { hp: number; mp: number }>
 ): BattleActor[] =>
   team.map(ba => {
     const updated = resultMap.get(ba.actor.name);
-    const mpCost = mpSpent.get(ba.actor.name) ?? 0;
     return {
       ...ba,
       currentHp: updated?.hp ?? ba.currentHp,
-      currentMp: Math.max(0, (updated?.mp ?? ba.currentMp) - mpCost),
+      currentMp: Math.max(0, updated?.mp ?? ba.currentMp),
     };
   });
 
@@ -140,8 +138,8 @@ export const executeBattleTurn = ({
 
   statusManager.tickTurn();
 
-  const nextPlayerTeam = applyResultsToTeam(playerTeam, resultMap, mpSpent);
-  const nextEnemyTeam = applyResultsToTeam(enemyTeam, resultMap, mpSpent);
+  const nextPlayerTeam = applyResultsToTeam(playerTeam, resultMap);
+  const nextEnemyTeam = applyResultsToTeam(enemyTeam, resultMap);
 
   return {
     nextPlayerTeam,
