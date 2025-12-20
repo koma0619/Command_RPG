@@ -8,7 +8,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 100,
     mp: 40,
     atk: 35,
-    def: 30,
+    def: 20,
     spd: 1,
     isEnemy: true,
     skills: [
@@ -22,7 +22,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 90,
     mp: 45,
     atk: 40,
-    def: 25,
+    def: 20,
     spd: 2,
     isEnemy: true,
     skills: [
@@ -36,7 +36,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 85,
     mp: 70,
     atk: 30,
-    def: 28,
+    def: 20,
     spd: 2,
     isEnemy: true,
     skills: [
@@ -64,7 +64,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 80,
     mp: 40,
     atk: 50,
-    def: 15,
+    def: 20,
     spd: 3,
     isEnemy: true,
     skills: [
@@ -78,7 +78,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 95,
     mp: 55,
     atk: 42,
-    def: 22,
+    def: 20,
     spd: 2,
     isEnemy: true,
     skills: [
@@ -92,7 +92,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 65,
     mp: 90,
     atk: 25,
-    def: 15,
+    def: 20,
     spd: 4,
     isEnemy: true,
     skills: [
@@ -106,7 +106,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 60,
     mp: 85,
     atk: 28,
-    def: 18,
+    def: 20,
     spd: 4,
     isEnemy: true,
     skills: [
@@ -134,7 +134,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 75,
     mp: 70,
     atk: 20,
-    def: 22,
+    def: 20,
     spd: 3,
     isEnemy: true,
     skills: [
@@ -148,7 +148,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 85,
     mp: 75,
     atk: 38,
-    def: 25,
+    def: 20,
     spd: 4,
     isEnemy: true,
     skills: [
@@ -162,7 +162,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     hp: 80,
     mp: 65,
     atk: 32,
-    def: 28,
+    def: 20,
     spd: 3,
     isEnemy: true,
     skills: [
@@ -181,7 +181,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 95,
     mp: 40,
     atk: 35,
-    def: 32,
+    def: 20,
     spd: 2,
     isEnemy: false,
     skills: [
@@ -195,7 +195,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 85,
     mp: 45,
     atk: 38,
-    def: 28,
+    def: 20,
     spd: 3,
     isEnemy: false,
     skills: [
@@ -223,7 +223,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 85,
     mp: 35,
     atk: 48,
-    def: 18,
+    def: 20,
     spd: 3,
     isEnemy: false,
     skills: [
@@ -237,7 +237,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 65,
     mp: 90,
     atk: 25,
-    def: 15,
+    def: 20,
     spd: 4,
     isEnemy: false,
     skills: [
@@ -252,7 +252,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 70,
     mp: 85,
     atk: 28,
-    def: 18,
+    def: 20,
     spd: 4,
     isEnemy: false,
     skills: [
@@ -267,7 +267,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 80,
     mp: 80,
     atk: 22,
-    def: 25,
+    def: 20,
     spd: 3,
     isEnemy: false,
     skills: [
@@ -282,7 +282,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     hp: 75,
     mp: 85,
     atk: 20,
-    def: 22,
+    def: 20,
     spd: 3,
     isEnemy: false,
     skills: [
