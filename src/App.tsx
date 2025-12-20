@@ -4,157 +4,27 @@ import './components/BattleComponents.css';
 import './components/CommandPanel.css';
 import { BattleLog, EnemyTeamDisplay, PlayerTeamDisplay } from './components/BattleComponents';
 import { CommandPanel } from './components/CommandPanel';
-import type { BattleActor, SkillTargetType } from './types/battleTypes';
-import type { SkillId } from './types/skillIds';
-import type { QueuedAction } from './types/queuedAction';
-import { StatusManager } from './engine/statusManager';
-import { generateRandomEnemyTeam, createInitialPlayerTeam } from './data/characterData';
-import { SKILLS } from './data/skillData';
-import { executeBattleTurn, ensureAllPlayersQueued } from './engine/battleFlow';
+import { getSkillLabel } from './engine/commandRules';
+import { useBattleController } from './hooks/useBattleController';
 
 export default function App(): React.ReactElement {
-  const statusManager = React.useRef(new StatusManager());
-  const [playerTeam, setPlayerTeam] = React.useState<BattleActor[]>(createInitialPlayerTeam());
-  const [enemyTeam, setEnemyTeam] = React.useState<BattleActor[]>(generateRandomEnemyTeam());
-  const [battleLog, setBattleLog] = React.useState<string[]>(['戦闘開始！']);
-  const [actionQueue, setActionQueue] = React.useState<QueuedAction[]>([]);
-  // 画面表示用に「誰が何を選んだか」を保持
-  const [pendingActions, setPendingActions] = React.useState<Map<string, string>>(new Map());
-  const [selectedActor, setSelectedActor] = React.useState<BattleActor | null>(null);
-  // 単体対象スキルのときに対象選択を促すための情報
-  const [targetPrompt, setTargetPrompt] = React.useState<{ actorId: string; skillId: SkillId; targetType: SkillTargetType } | null>(null);
-
-  // バトルログ追記のヘルパー
-  const logMessage = (message: string) => {
-    setBattleLog(prev => [...prev, message]);
-  };
-
-  // 初期状態へ戻し、ステータス効果もクリア
-  const resetBattle = () => {
-    setPlayerTeam(createInitialPlayerTeam());
-    setEnemyTeam(generateRandomEnemyTeam());
-    setBattleLog(['戦闘開始！']);
-    setActionQueue([]);
-    setPendingActions(new Map());
-    setSelectedActor(null);
-    setTargetPrompt(null);
-    statusManager.current.clear();
-  };
-
-  // 行動確定の共通処理（キュー追加と表示用状態の更新）
-  const enqueueAction = (actorId: string, skillId: SkillId, targetIds?: string[]) => {
-    setActionQueue(prev => [...prev, { actorId, skillId, targetIds }]);
-    setPendingActions(prev => {
-      const next = new Map(prev);
-      next.set(actorId, SKILLS[skillId]?.name ?? skillId);
-      return next;
-    });
-    setSelectedActor(null);
-    setTargetPrompt(null);
-  };
-
-  // スキル選択時の分岐（コスト/対象タイプ/重複選択のチェック）
-  const handleSkillSelect = (skillId: SkillId) => {
-    if (!selectedActor) return;
-    if (actionQueue.some(a => a.actorId === selectedActor.actor.name)) {
-      logMessage(`${selectedActor.actor.name}は既に行動を選択済みです`);
-      return;
-    }
-
-    const skill = SKILLS[skillId];
-    const cost = skill.mpCost ?? 0;
-    if (selectedActor.currentMp < cost) {
-      logMessage(`${selectedActor.actor.name}はMPが足りない`);
-      return;
-    }
-
-    // 対象が全体/自分の場合はここで即確定
-    const addAllTargets = (targetType: SkillTargetType) => {
-      if (targetType === 'ally_all') {
-        const ids = playerTeam.filter(p => p.currentHp > 0).map(p => p.actor.name);
-        enqueueAction(selectedActor.actor.name, skillId, ids);
-        return true;
-      }
-      if (targetType === 'enemy_all') {
-        const ids = enemyTeam.filter(e => e.currentHp > 0).map(e => e.actor.name);
-        enqueueAction(selectedActor.actor.name, skillId, ids);
-        return true;
-      }
-      if (targetType === 'self') {
-        enqueueAction(selectedActor.actor.name, skillId, [selectedActor.actor.name]);
-        return true;
-      }
-      return false;
-    };
-
-    if (addAllTargets(skill.target)) {
-      return;
-    }
-
-    if (skill.target === 'ally_single' || skill.target === 'enemy_single') {
-      setTargetPrompt({ actorId: selectedActor.actor.name, skillId, targetType: skill.target });
-      return;
-    }
-
-    enqueueAction(selectedActor.actor.name, skillId);
-  };
-
-  // 単体対象の選択確定
-  const handleTargetPick = (targetId: string) => {
-    if (!targetPrompt) return;
-    enqueueAction(targetPrompt.actorId, targetPrompt.skillId, [targetId]);
-  };
-
-  // 選択キャンセル（アクター/対象選択を解除）
-  const handleCancelSelection = () => {
-    setSelectedActor(null);
-    setTargetPrompt(null);
-  };
-
-  // ターン実行のメイン処理
-  const executeTurn = () => {
-    const validationMessage = ensureAllPlayersQueued(playerTeam, actionQueue);
-    if (validationMessage) {
-      logMessage(validationMessage);
-      return;
-    }
-
-    const outcome = executeBattleTurn({
-      playerTeam,
-      enemyTeam,
-      actionQueue,
-      statusManager: statusManager.current,
-    });
-
-    outcome.events.forEach(event => {
-      const skillLabel = SKILLS[event.skill]?.name ?? event.skill;
-      const detail = event.detail ? `→${event.detail}` : '';
-      logMessage(`${event.actorName}の${skillLabel}${detail}`);
-    });
-
-    setPlayerTeam(outcome.nextPlayerTeam);
-    setEnemyTeam(outcome.nextEnemyTeam);
-    setActionQueue([]);
-    setPendingActions(new Map());
-    setSelectedActor(null);
-    setTargetPrompt(null);
-
-    if (outcome.enemiesDefeated) {
-      logMessage('🎉 勝利！リセットして再戦できます');
-    } else if (outcome.playersDefeated) {
-      logMessage('😱 全滅...リセットして再挑戦してください');
-    }
-  };
-
-  // 対象候補は単体対象のときのみ計算
-  const alivePlayersCount = playerTeam.filter(p => p.currentHp > 0).length;
-  const targetCandidates = React.useMemo(() => {
-    if (!targetPrompt) return [] as BattleActor[];
-    if (targetPrompt.targetType.startsWith('enemy')) {
-      return enemyTeam.filter(e => e.currentHp > 0);
-    }
-    return playerTeam.filter(p => p.currentHp > 0);
-  }, [targetPrompt, playerTeam, enemyTeam]);
+  const {
+    actionQueue,
+    alivePlayersCount,
+    battleLog,
+    enemyTeam,
+    pendingActions,
+    playerTeam,
+    selectedActor,
+    targetCandidates,
+    targetPrompt,
+    resetBattle,
+    executeTurn,
+    handleCancelSelection,
+    handleSkillSelect,
+    handleTargetPick,
+    setSelectedActor,
+  } = useBattleController();
 
   return (
     <div className="game-container">
@@ -170,7 +40,7 @@ export default function App(): React.ReactElement {
 
       {targetPrompt && (
         <div className="target-panel">
-          <div>対象を選んでください（{SKILLS[targetPrompt.skillId]?.name ?? targetPrompt.skillId}）</div>
+          <div>対象を選んでください（{getSkillLabel(targetPrompt.skillId)}）</div>
           <div className="target-buttons">
             {targetCandidates.map(t => (
               <button
