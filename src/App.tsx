@@ -18,14 +18,18 @@ export default function App(): React.ReactElement {
   const [enemyTeam, setEnemyTeam] = React.useState<BattleActor[]>(generateRandomEnemyTeam());
   const [battleLog, setBattleLog] = React.useState<string[]>(['戦闘開始！']);
   const [actionQueue, setActionQueue] = React.useState<QueuedAction[]>([]);
+  // 画面表示用に「誰が何を選んだか」を保持
   const [pendingActions, setPendingActions] = React.useState<Map<string, string>>(new Map());
   const [selectedActor, setSelectedActor] = React.useState<BattleActor | null>(null);
+  // 単体対象スキルのときに対象選択を促すための情報
   const [targetPrompt, setTargetPrompt] = React.useState<{ actorId: string; skillId: SkillId; targetType: SkillTargetType } | null>(null);
 
+  // バトルログ追記のヘルパー
   const logMessage = (message: string) => {
     setBattleLog(prev => [...prev, message]);
   };
 
+  // 初期状態へ戻し、ステータス効果もクリア
   const resetBattle = () => {
     setPlayerTeam(createInitialPlayerTeam());
     setEnemyTeam(generateRandomEnemyTeam());
@@ -37,6 +41,7 @@ export default function App(): React.ReactElement {
     statusManager.current.clear();
   };
 
+  // 行動確定の共通処理（キュー追加と表示用状態の更新）
   const enqueueAction = (actorId: string, skillId: SkillId, targetIds?: string[]) => {
     setActionQueue(prev => [...prev, { actorId, skillId, targetIds }]);
     setPendingActions(prev => {
@@ -48,6 +53,7 @@ export default function App(): React.ReactElement {
     setTargetPrompt(null);
   };
 
+  // スキル選択時の分岐（コスト/対象タイプ/重複選択のチェック）
   const handleSkillSelect = (skillId: SkillId) => {
     if (!selectedActor) return;
     if (actionQueue.some(a => a.actorId === selectedActor.actor.name)) {
@@ -62,6 +68,7 @@ export default function App(): React.ReactElement {
       return;
     }
 
+    // 対象が全体/自分の場合はここで即確定
     const addAllTargets = (targetType: SkillTargetType) => {
       if (targetType === 'ally_all') {
         const ids = playerTeam.filter(p => p.currentHp > 0).map(p => p.actor.name);
@@ -80,7 +87,6 @@ export default function App(): React.ReactElement {
       return false;
     };
 
-    // auto-handle all/self targets
     if (addAllTargets(skill.target)) {
       return;
     }
@@ -90,20 +96,22 @@ export default function App(): React.ReactElement {
       return;
     }
 
-    // fallback
     enqueueAction(selectedActor.actor.name, skillId);
   };
 
+  // 単体対象の選択確定
   const handleTargetPick = (targetId: string) => {
     if (!targetPrompt) return;
     enqueueAction(targetPrompt.actorId, targetPrompt.skillId, [targetId]);
   };
 
+  // 選択キャンセル（アクター/対象選択を解除）
   const handleCancelSelection = () => {
     setSelectedActor(null);
     setTargetPrompt(null);
   };
 
+  // ターン実行のメイン処理
   const executeTurn = () => {
     const validationMessage = ensureAllPlayersQueued(playerTeam, actionQueue);
     if (validationMessage) {
@@ -138,6 +146,7 @@ export default function App(): React.ReactElement {
     }
   };
 
+  // 対象候補は単体対象のときのみ計算
   const alivePlayersCount = playerTeam.filter(p => p.currentHp > 0).length;
   const targetCandidates = React.useMemo(() => {
     if (!targetPrompt) return [] as BattleActor[];
