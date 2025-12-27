@@ -134,7 +134,7 @@ export const executeBattleTurn = ({
     return (
       playerActionMap.get(entry.actor.name) ?? {
         actor: entry.actor,
-        skillName: 'attack',
+        skillName: 'attack' as Action['skillName'],
         isAuto: true,
       }
     );

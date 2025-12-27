@@ -9,7 +9,7 @@ const defineSkill = <K extends SkillId>(id: K, data: SkillDefinition): Skill => 
 });
 
 const toSkillDictionary = (skills: Skill[]): SkillDictionary<Skill> => {
-    const dictionary: Partial<SkillDictionary<Skill>> = {};
+    const dictionary: Record<string, Skill> = {};
 
     for (const skill of skills) {
         if (dictionary[skill.id]) {
