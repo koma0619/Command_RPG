@@ -44,9 +44,9 @@ export function EnemyTeamDisplay({ enemies }: EnemyTeamDisplayProps): React.Reac
       {enemies.map((e) => (
         <div key={e.actor.name} className="enemy-item">
           <div className="enemy-header">{e.actor.emoji} {e.actor.name}</div>
-          <HpBar current={e.currentHp} max={e.actor.hp} />
-          <div>MP: {e.currentMp} / {e.actor.mp}</div>
-          <div>ATK: {e.actor.atk} DEF: {e.actor.def} SPD: {e.actor.spd}</div>
+          <HpBar current={e.currentHp} max={e.actor.stats.hp} />
+          <div>MP: {e.currentMp} / {e.actor.stats.mp}</div>
+          <div>ATK: {e.actor.stats.atk} DEF: {e.actor.stats.def} SPD: {e.actor.stats.spd}</div>
         </div>
       ))}
     </div>
@@ -64,8 +64,8 @@ export function PlayerTeamDisplay({ players, pendingActions }: PlayerTeamDisplay
       {players.map((p) => (
         <div key={p.actor.name} className="player-item">
           <div className="player-header">{p.actor.emoji} {p.actor.name}</div>
-          <HpBar current={p.currentHp} max={p.actor.hp} />
-          <div>MP: {p.currentMp} / {p.actor.mp}</div>
+          <HpBar current={p.currentHp} max={p.actor.stats.hp} />
+          <div>MP: {p.currentMp} / {p.actor.stats.mp}</div>
           <div>
             {pendingActions.has(p.actor.name) ? (
               <span className="pending-action">⏳ {pendingActions.get(p.actor.name)}</span>

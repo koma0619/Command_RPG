@@ -27,7 +27,7 @@ export const getSkillPriority = (skillName: SkillId): number => {
  * 行動配列を実行順にソートして返す。
  * ソート基準:
  * 1) skill.priority（数値高いほど先）
- * 2) actor.spd（高いほど先）
+ * 2) actor.stats.spd（高いほど先）
  * 3) 上記同値はランダム（公平なタイブレーク）
  */
 export const determineTurnOrder = (
@@ -38,7 +38,7 @@ export const determineTurnOrder = (
   const withRand = entries.map(entry => ({
     entry,
     priority: entry.skillName ? getSkillPriority(entry.skillName) : 0,
-    spd: entry.actor.spd,
+    spd: entry.actor.stats.spd,
     rand: rng()
   }));
 

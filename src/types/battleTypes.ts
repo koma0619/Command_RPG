@@ -34,15 +34,19 @@ export interface BuffEffect {
   duration: number;
 }
 
-export interface Actor {
-  name: string;
-  emoji?: string;
+export interface ActorStats {
   hp: number;  // 最大HP
-  maxHp?: number; // 戦闘中の最大HP（任意、未設定なら hp を使用）
   mp: number;  // 最大MP
   atk: number;
   def: number;
   spd: number;
+}
+
+export interface Actor {
+  name: string;
+  emoji?: string;
+  stats: ActorStats;
+  maxHp?: number; // 戦闘中の最大HP（任意、未設定なら stats.hp を使用）
   skills: SkillId[]; // スキルIDリスト
   isEnemy: boolean;
 }

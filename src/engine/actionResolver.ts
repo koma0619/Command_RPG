@@ -33,7 +33,7 @@ export const resolveActions = (
   for (const a of actors) actorMap.set(a.name, a);
 
   const clampHp = (actor: Actor, nextHp: number) => {
-    const maxHp = actor.maxHp ?? actor.hp;
+    const maxHp = actor.maxHp ?? actor.stats.hp;
     return Math.min(maxHp, nextHp);
   };
 
@@ -46,12 +46,12 @@ export const resolveActions = (
     if (override?.length) {
       return override
         .map(id => actorMap.get(id))
-        .filter((t): t is Actor => !!t && t.hp > 0);
+        .filter((t): t is Actor => !!t && t.stats.hp > 0);
     }
 
     const all = Array.from(actorMap.values());
-    const enemies = all.filter(x => x.isEnemy !== user.isEnemy && x.hp > 0);
-    const allies = all.filter(x => x.isEnemy === user.isEnemy && x.hp > 0);
+    const enemies = all.filter(x => x.isEnemy !== user.isEnemy && x.stats.hp > 0);
+    const allies = all.filter(x => x.isEnemy === user.isEnemy && x.stats.hp > 0);
 
     if (targetType === 'self') return [user];
     if (targetType === 'ally_single') {
@@ -74,7 +74,7 @@ export const resolveActions = (
       const skill = SKILLS[id];
       if (!skill) return false;
       const cost = skill.mpCost ?? 0;
-      return user.mp >= cost;
+      return user.stats.mp >= cost;
     });
     if (usable.length === 0) return 'attack';
     return usable[Math.floor(rng() * usable.length)];
@@ -82,14 +82,14 @@ export const resolveActions = (
 
   for (const act of actions) {
     const attacker = actorMap.get(act.actor.name);
-    if (!attacker || attacker.hp <= 0) continue; // dead can't act
+    if (!attacker || attacker.stats.hp <= 0) continue; // dead can't act
 
     const skillId = act.isAuto ? chooseAutoSkill(attacker) : act.skillName;
     const skill = SKILLS[skillId];
     if (!skill) continue;
     if (act.isAuto) {
       const cost = skill.mpCost ?? 0;
-      attacker.mp = Math.max(0, attacker.mp - cost);
+      attacker.stats.mp = Math.max(0, attacker.stats.mp - cost);
     }
 
     const emit = (
@@ -150,27 +150,27 @@ export const resolveActions = (
       const hits = skill.hits ?? 1;
       for (let h = 0; h < hits; h++) {
         for (const t of targets) {
-          if (t.hp <= 0) continue;
+          if (t.stats.hp <= 0) continue;
           let damage = 0;
           if (skill.type === 'attack_magic') {
             // magic uses fixed power and ignores DEF; magic_shield reduces
             damage = Math.round(skill.power ?? 0);
             // apply magic shield from status manager
-            const mod = sm.computeModifiedStats({ atk: t.atk, def: t.def, spd: t.spd }, t.name);
+            const mod = sm.computeModifiedStats({ atk: t.stats.atk, def: t.stats.def, spd: t.stats.spd }, t.name);
             damage = Math.max(0, Math.round(damage * mod.magicShield));
           } else {
             // physical style
             const power = skill.power ?? 1;
-            damage = Math.max(1, Math.round(attacker.atk * power - t.def));
+            damage = Math.max(1, Math.round(attacker.stats.atk * power - t.stats.def));
           }
 
-          t.hp = Math.max(0, t.hp - damage);
+          t.stats.hp = Math.max(0, t.stats.hp - damage);
           emit('damage', [t.name], damage);
 
           // drain
           if (skill.drain) {
             const heal = Math.round(damage * skill.drain);
-            attacker.hp = clampHp(attacker, attacker.hp + heal);
+            attacker.stats.hp = clampHp(attacker, attacker.stats.hp + heal);
             emit('heal', [attacker.name], heal);
           }
 
@@ -186,7 +186,7 @@ export const resolveActions = (
     if (skill.type === 'heal' || skill.type === 'heal_regen') {
       for (const t of targets) {
         const amount = Math.round(skill.power ?? 0);
-        t.hp = clampHp(t, t.hp + amount);
+        t.stats.hp = clampHp(t, t.stats.hp + amount);
         emit('heal', [t.name], amount);
       }
       continue;
@@ -194,9 +194,9 @@ export const resolveActions = (
 
     if (skill.type === 'revive' || skill.type === 'mega_revive') {
       for (const t of targets) {
-        if (t.hp <= 0) {
-          const revivedHp = Math.max(1, Math.round((t.hp || 0) + 30));
-          t.hp = clampHp(t, revivedHp);
+        if (t.stats.hp <= 0) {
+          const revivedHp = Math.max(1, Math.round((t.stats.hp || 0) + 30));
+          t.stats.hp = clampHp(t, revivedHp);
           emit('revive', [t.name], revivedHp);
         } else {
           emit('other', [t.name], undefined, 'target_not_dead');

@@ -6,11 +6,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'ゴーレム',
     emoji: '🗿',
-    hp: 100,
-    mp: 40,
-    atk: 40,
-    def: 20,
-    spd: 1,
+    stats: {
+      hp: 100,
+      mp: 40,
+      atk: 40,
+      def: 20,
+      spd: 1,
+    },
     isEnemy: true,
     skills: [
       'niou_dachi',
@@ -20,11 +22,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'トロル',
     emoji: '👹',
-    hp: 90,
-    mp: 45,
-    atk: 44,
-    def: 20,
-    spd: 2,
+    stats: {
+      hp: 90,
+      mp: 45,
+      atk: 44,
+      def: 20,
+      spd: 2,
+    },
     isEnemy: true,
     skills: [
       'otakebi',
@@ -34,11 +38,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'メガザルロック',
     emoji: '🪨',
-    hp: 85,
-    mp: 70,
-    atk: 32,
-    def: 20,
-    spd: 2,
+    stats: {
+      hp: 85,
+      mp: 70,
+      atk: 32,
+      def: 20,
+      spd: 2,
+    },
     isEnemy: true,
     skills: [
       'mega_zaru',
@@ -48,11 +54,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'キラーパンサー',
     emoji: '🐆',
-    hp: 70,
-    mp: 50,
-    atk: 48,
-    def: 20,
-    spd: 5,
+    stats: {
+      hp: 70,
+      mp: 50,
+      atk: 48,
+      def: 20,
+      spd: 5,
+    },
     isEnemy: true,
     skills: [
       'shippu_tsuki',
@@ -62,11 +70,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'バーサーカー',
     emoji: '👺',
-    hp: 80,
-    mp: 40,
-    atk: 46,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 80,
+      mp: 40,
+      atk: 46,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: true,
     skills: [
       'sutemi_kogeki',
@@ -76,11 +86,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'おおきづち',
     emoji: '🔨',
-    hp: 95,
-    mp: 55,
-    atk: 44,
-    def: 20,
-    spd: 2,
+    stats: {
+      hp: 95,
+      mp: 55,
+      atk: 44,
+      def: 20,
+      spd: 2,
+    },
     isEnemy: true,
     skills: [
       'tameru',
@@ -90,11 +102,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'メラゴースト',
     emoji: '👻',
-    hp: 65,
-    mp: 90,
-    atk: 32,
-    def: 20,
-    spd: 4,
+    stats: {
+      hp: 65,
+      mp: 90,
+      atk: 32,
+      def: 20,
+      spd: 4,
+    },
     isEnemy: true,
     skills: [
       'mera_mi',
@@ -104,11 +118,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'ベビーサタン',
     emoji: '👿',
-    hp: 60,
-    mp: 85,
-    atk: 36,
-    def: 20,
-    spd: 4,
+    stats: {
+      hp: 60,
+      mp: 85,
+      atk: 36,
+      def: 20,
+      spd: 4,
+    },
     isEnemy: true,
     skills: [
       'io_ra',
@@ -118,11 +134,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'ようじゅつし',
     emoji: '🧙',
-    hp: 70,
-    mp: 80,
-    atk: 34,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 70,
+      mp: 80,
+      atk: 34,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: true,
     skills: [
       'bike_ruto',
@@ -132,11 +150,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'ホイミスライム',
     emoji: '💧',
-    hp: 75,
-    mp: 70,
-    atk: 32,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 75,
+      mp: 70,
+      atk: 32,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: true,
     skills: [
       'hoimi',
@@ -146,11 +166,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'キメラ',
     emoji: '🦁',
-    hp: 85,
-    mp: 75,
-    atk: 42,
-    def: 20,
-    spd: 4,
+    stats: {
+      hp: 85,
+      mp: 75,
+      atk: 42,
+      def: 20,
+      spd: 4,
+    },
     isEnemy: true,
     skills: [
       'behomarah',
@@ -160,11 +182,13 @@ const ENEMY_CHARACTERS: Actor[] = [
   {
     name: 'メーダ',
     emoji: '🤖',
-    hp: 80,
-    mp: 65,
-    atk: 36,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 80,
+      mp: 65,
+      atk: 36,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: true,
     skills: [
       'rihoimi',
@@ -179,11 +203,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'ガルド',
     emoji: '🛡️',
-    hp: 95,
-    mp: 40,
-    atk: 40,
-    def: 20,
-    spd: 2,
+    stats: {
+      hp: 95,
+      mp: 40,
+      atk: 40,
+      def: 20,
+      spd: 2,
+    },
     isEnemy: false,
     skills: [
       'niou_dachi',
@@ -193,11 +219,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'シェイド',
     emoji: '⚔️',
-    hp: 85,
-    mp: 45,
-    atk: 44,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 85,
+      mp: 45,
+      atk: 44,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: false,
     skills: [
       'yaiba_kuda',
@@ -207,11 +235,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'リオ',
     emoji: '🥋',
-    hp: 75,
-    mp: 50,
-    atk: 48,
-    def: 20,
-    spd: 5,
+    stats: {
+      hp: 75,
+      mp: 50,
+      atk: 48,
+      def: 20,
+      spd: 5,
+    },
     isEnemy: false,
     skills: [
       'shippu_tsuki',
@@ -221,11 +251,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'バルガス',
     emoji: '💢',
-    hp: 85,
-    mp: 35,
-    atk: 46,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 85,
+      mp: 35,
+      atk: 46,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: false,
     skills: [
       'sutemi_kogeki',
@@ -235,11 +267,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'アリア',
     emoji: '🔮',
-    hp: 65,
-    mp: 90,
-    atk: 32,
-    def: 20,
-    spd: 4,
+    stats: {
+      hp: 65,
+      mp: 90,
+      atk: 32,
+      def: 20,
+      spd: 4,
+    },
     isEnemy: false,
     skills: [
       'mera_mi',
@@ -250,11 +284,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'ルフナ',
     emoji: '✨',
-    hp: 70,
-    mp: 85,
-    atk: 36,
-    def: 20,
-    spd: 4,
+    stats: {
+      hp: 70,
+      mp: 85,
+      atk: 36,
+      def: 20,
+      spd: 4,
+    },
     isEnemy: false,
     skills: [
       'io_ra',
@@ -265,11 +301,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'セレス',
     emoji: '💖',
-    hp: 80,
-    mp: 80,
-    atk: 34,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 80,
+      mp: 80,
+      atk: 34,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: false,
     skills: [
       'behomarah',
@@ -280,11 +318,13 @@ const PLAYER_CHARACTERS: Actor[] = [
   {
     name: 'フィオナ',
     emoji: '💫',
-    hp: 75,
-    mp: 85,
-    atk: 32,
-    def: 20,
-    spd: 3,
+    stats: {
+      hp: 75,
+      mp: 85,
+      atk: 32,
+      def: 20,
+      spd: 3,
+    },
     isEnemy: false,
     skills: [
       'hoimi',
@@ -303,8 +343,8 @@ export function generateRandomEnemyTeam(): BattleActor[] {
     .slice(0, 3)
     .map(actor => ({
       actor: actor,
-      currentHp: actor.hp,
-      currentMp: actor.mp,
+      currentHp: actor.stats.hp,
+      currentMp: actor.stats.mp,
       status: {} // 初期ステータスは空オブジェクト
     }));
 }
@@ -316,8 +356,8 @@ export function createInitialPlayerTeam(): BattleActor[] {
     .slice(0, 3)
     .map(actor => ({
       actor: actor,
-      currentHp: actor.hp,
-      currentMp: actor.mp,
+      currentHp: actor.stats.hp,
+      currentMp: actor.stats.mp,
       status: {} // 初期ステータスは空オブジェクト
     }));
 }

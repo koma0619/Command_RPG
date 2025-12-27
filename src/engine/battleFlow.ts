@@ -44,7 +44,14 @@ const buildAction = (
   const mpAfter = Math.max(0, battleActor.currentMp - cost);
   mpSpent.set(battleActor.actor.name, cost);
   return {
-    actor: { ...battleActor.actor, hp: battleActor.currentHp, mp: mpAfter },
+    actor: {
+      ...battleActor.actor,
+      stats: {
+        ...battleActor.actor.stats,
+        hp: battleActor.currentHp,
+        mp: mpAfter,
+      },
+    },
     skillName: skill.id,
     targetIds,
     isAuto,
@@ -75,23 +82,26 @@ const mapActorsForResolution = (
     const cost = mpSpent.get(ba.actor.name) ?? 0;
     return {
       ...ba.actor,
-      hp: ba.currentHp,
-      mp: Math.max(0, ba.currentMp - cost),
-      maxHp: ba.actor.hp,
+      stats: {
+        ...ba.actor.stats,
+        hp: ba.currentHp,
+        mp: Math.max(0, ba.currentMp - cost),
+      },
+      maxHp: ba.actor.maxHp ?? ba.actor.stats.hp,
     };
   });
 };
 
 const applyResultsToTeam = (
   team: BattleActor[],
-  resultMap: Map<string, { hp: number; mp: number }>
+  resultMap: Map<string, BattleActor['actor']>
 ): BattleActor[] =>
   team.map(ba => {
     const updated = resultMap.get(ba.actor.name);
     return {
       ...ba,
-      currentHp: updated?.hp ?? ba.currentHp,
-      currentMp: Math.max(0, updated?.mp ?? ba.currentMp),
+      currentHp: updated?.stats.hp ?? ba.currentHp,
+      currentMp: Math.max(0, updated?.stats.mp ?? ba.currentMp),
     };
   });
 
@@ -111,8 +121,11 @@ export const executeBattleTurn = ({
     .map(battleActor => ({
       actor: {
         ...battleActor.actor,
-        hp: battleActor.currentHp,
-        mp: battleActor.currentMp,
+        stats: {
+          ...battleActor.actor.stats,
+          hp: battleActor.currentHp,
+          mp: battleActor.currentMp,
+        },
       },
       skillName: playerActionMap.get(battleActor.actor.name)?.skillName,
     }));

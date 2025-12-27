@@ -11,22 +11,26 @@ describe('actionResolver', () => {
     sm = new StatusManager();
   });
 
-  const createTestActor = (partial?: Partial<Actor>): Actor => ({
-    name: 'Test Actor',
-    emoji: '🤖',
-    hp: 100,
-    mp: 100,
-    atk: 50,
-    def: 30,
-    spd: 3,
-    skills: ['attack'],
-    isEnemy: false,
-    ...partial
-  });
+  const createTestActor = (partial?: Partial<Actor>): Actor => {
+    const baseStats = { hp: 100, mp: 100, atk: 50, def: 30, spd: 3 };
+    const stats = { ...baseStats, ...partial?.stats };
+    const maxHp = partial?.maxHp ?? stats.hp;
+    return {
+      name: 'Test Actor',
+      emoji: '🤖',
+      stats,
+      maxHp,
+      skills: ['attack'],
+      isEnemy: false,
+      ...partial,
+      stats,
+      maxHp,
+    };
+  };
 
   test('基本的な攻撃解決', () => {
-    const attacker = createTestActor({ name: 'attacker', atk: 50, isEnemy: false });
-    const defender = createTestActor({ name: 'defender', def: 20, isEnemy: true });
+    const attacker = createTestActor({ name: 'attacker', stats: { atk: 50 }, isEnemy: false });
+    const defender = createTestActor({ name: 'defender', stats: { def: 20 }, isEnemy: true });
     
     const action: Action = {
       actor: attacker,
@@ -41,7 +45,7 @@ describe('actionResolver', () => {
     expect(events[0].value).toBe(10);
     
     const updatedDefender = actors.find(a => a.name === 'defender');
-    expect(updatedDefender?.hp).toBe(90); // 100 - 10
+    expect(updatedDefender?.stats.hp).toBe(90); // 100 - 10
   });
 
   test('デバフが相手のバフを解除', () => {
@@ -69,7 +73,7 @@ describe('actionResolver', () => {
 
   test('魔法攻撃はDEFを無視してmagicShieldの影響を受ける', () => {
     const attacker = createTestActor({ name: 'attacker', isEnemy: false });
-    const defender = createTestActor({ name: 'defender', def: 999, isEnemy: true }); // 高DEF
+    const defender = createTestActor({ name: 'defender', stats: { def: 999 }, isEnemy: true }); // 高DEF
     
     // マジックバリアを付与（魔法ダメージ半減）
     sm.addEffectBySkill(defender.name, 'magic_barrier');
@@ -87,11 +91,11 @@ describe('actionResolver', () => {
     expect(events[0].value).toBe(10);
     
     const updatedDefender = actors.find(a => a.name === 'defender');
-    expect(updatedDefender?.hp).toBe(90); // 100 - 10
+    expect(updatedDefender?.stats.hp).toBe(90); // 100 - 10
   });
 
   test('HP0以下で行動不能', () => {
-    const attacker = createTestActor({ name: 'attacker', hp: 0, isEnemy: false });
+    const attacker = createTestActor({ name: 'attacker', stats: { hp: 0 }, isEnemy: false });
     const defender = createTestActor({ name: 'defender', isEnemy: true });
     
     const action: Action = {
@@ -104,8 +108,8 @@ describe('actionResolver', () => {
   });
 
   test('連続攻撃（hits）の処理', () => {
-    const attacker = createTestActor({ name: 'attacker', atk: 50, isEnemy: false });
-    const defender = createTestActor({ name: 'defender', def: 20, isEnemy: true });
+    const attacker = createTestActor({ name: 'attacker', stats: { atk: 50 }, isEnemy: false });
+    const defender = createTestActor({ name: 'defender', stats: { def: 20 }, isEnemy: true });
     
     const action: Action = {
       actor: attacker,
@@ -121,8 +125,8 @@ describe('actionResolver', () => {
   });
 
   test('吸収攻撃（drain）の処理', () => {
-    const attacker = createTestActor({ name: 'attacker', atk: 50, hp: 50, isEnemy: false });
-    const defender = createTestActor({ name: 'defender', def: 20, isEnemy: true });
+    const attacker = createTestActor({ name: 'attacker', stats: { atk: 50, hp: 50 }, maxHp: 100, isEnemy: false });
+    const defender = createTestActor({ name: 'defender', stats: { def: 20 }, isEnemy: true });
     
     const action: Action = {
       actor: attacker,
@@ -139,6 +143,6 @@ describe('actionResolver', () => {
     expect(healEvent?.value).toBe(15);
     
     const updatedAttacker = actors.find(a => a.name === 'attacker');
-    expect(updatedAttacker?.hp).toBe(65); // 50 + 15
+    expect(updatedAttacker?.stats.hp).toBe(65); // 50 + 15
   });
 });

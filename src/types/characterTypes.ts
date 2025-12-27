@@ -1,4 +1,4 @@
-import type { Actor } from './battleTypes';
+import type { Actor, ActorStats } from './battleTypes';
 
 // 役割の定義
 export type Role = 'tank' | 'attacker' | 'mage' | 'healer' | 'support';
@@ -10,11 +10,7 @@ export interface CharacterTemplate {
   emoji?: string;
   role?: Role;
   // 基本ステータス（固定）
-  hp: number;
-  mp: number;
-  atk: number;
-  def: number;
-  spd: number;
+  stats: ActorStats;
   // スキルはスキルIDの配列で定義する（データ駆動）
   skills: string[];
 }

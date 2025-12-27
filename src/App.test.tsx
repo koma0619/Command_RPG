@@ -8,11 +8,13 @@ const basePlayers: BattleActor[] = [
     actor: {
       name: 'ガルド',
       emoji: '🛡️',
-      hp: 100,
-      mp: 20,
-      atk: 25,
-      def: 15,
-      spd: 3,
+      stats: {
+        hp: 100,
+        mp: 20,
+        atk: 25,
+        def: 15,
+        spd: 3,
+      },
       skills: ['bike_ruto'],
       isEnemy: false,
     },
@@ -24,11 +26,13 @@ const basePlayers: BattleActor[] = [
     actor: {
       name: 'リナ',
       emoji: '🔮',
-      hp: 85,
-      mp: 35,
-      atk: 18,
-      def: 12,
-      spd: 4,
+      stats: {
+        hp: 85,
+        mp: 35,
+        atk: 18,
+        def: 12,
+        spd: 4,
+      },
       skills: ['hoimi'],
       isEnemy: false,
     },
@@ -43,11 +47,13 @@ const baseEnemies: BattleActor[] = [
     actor: {
       name: 'スライム',
       emoji: '👾',
-      hp: 60,
-      mp: 10,
-      atk: 10,
-      def: 5,
-      spd: 1,
+      stats: {
+        hp: 60,
+        mp: 10,
+        atk: 10,
+        def: 5,
+        spd: 1,
+      },
       skills: ['attack'],
       isEnemy: true,
     },
@@ -62,7 +68,7 @@ let enemyTeamMockData = baseEnemies;
 
 const cloneTeam = (team: BattleActor[]): BattleActor[] =>
   team.map((ba) => ({
-    actor: { ...ba.actor },
+    actor: { ...ba.actor, stats: { ...ba.actor.stats } },
     currentHp: ba.currentHp,
     currentMp: ba.currentMp,
     status: { ...ba.status },
@@ -71,8 +77,11 @@ const cloneTeam = (team: BattleActor[]): BattleActor[] =>
 const toActorState = (team: BattleActor[]): Actor[] =>
   team.map((ba) => ({
     ...ba.actor,
-    hp: ba.currentHp,
-    mp: ba.currentMp,
+    stats: {
+      ...ba.actor.stats,
+      hp: ba.currentHp,
+      mp: ba.currentMp,
+    },
   }));
 
 const resolveActionsMock = vi.fn();
@@ -147,11 +156,14 @@ describe('App', () => {
 
     resolveActionsMock.mockReturnValueOnce({
       actors: [
-        { ...customActors[0], hp: customActors[0].hp, mp: customActors[0].mp },
+        { ...customActors[0], stats: { ...customActors[0].stats } },
         {
           ...customActors[1],
-          hp: Math.max(0, customActors[1].hp - 20),
-          mp: customActors[1].mp,
+          stats: {
+            ...customActors[1].stats,
+            hp: Math.max(0, customActors[1].stats.hp - 20),
+            mp: customActors[1].stats.mp,
+          },
         },
       ],
       events: [
