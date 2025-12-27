@@ -1,4 +1,4 @@
-import { determineTurnOrder, type Action } from './turnOrder';
+import { determineTurnOrder, type Action, type TurnEntry } from './turnOrder';
 import { resolveActions, type ResolveEvent } from './actionResolver';
 import { SKILLS } from '../data/skillData';
 import type { BattleActor } from '../types/battleTypes';
@@ -75,15 +75,35 @@ const buildPlayerActions = (
     .filter((action): action is BuildActionResult => action !== null);
 };
 
-const buildEnemyActions = (
+const buildTurnEntries = (
+  playerTeam: BattleActor[],
   enemyTeam: BattleActor[],
-  mpSpent: Map<string, number>
-): BuildActionResult[] => {
-  return enemyTeam
-    .filter(enemy => enemy.currentHp > 0)
-    .map(enemy => {
-      return buildAction(enemy, 'attack', mpSpent, undefined, true);
-    });
+  playerActions: Map<string, Action>
+): TurnEntry[] => {
+  const all = [...playerTeam, ...enemyTeam].filter(actor => actor.currentHp > 0);
+  return all.map(battleActor => ({
+    actor: {
+      ...battleActor.actor,
+      hp: battleActor.currentHp,
+      mp: battleActor.currentMp,
+    },
+    skillName: playerActions.get(battleActor.actor.name)?.skillName,
+  }));
+};
+
+const buildOrderedActions = (
+  orderedEntries: TurnEntry[],
+  playerActions: Map<string, Action>
+): Action[] => {
+  return orderedEntries.map(entry => {
+    const planned = playerActions.get(entry.actor.name);
+    if (planned) return planned;
+    return {
+      actor: entry.actor,
+      skillName: 'attack',
+      isAuto: true,
+    };
+  });
 };
 
 const mapActorsForResolution = (
@@ -119,9 +139,10 @@ export const executeBattleTurn = ({
   const mpSpent = new Map<string, number>();
 
   const playerActions = buildPlayerActions(actionQueue, playerTeam, enemyTeam, mpSpent);
-  const enemyActions = buildEnemyActions(enemyTeam, mpSpent);
-  const allActionObjects = [...playerActions, ...enemyActions];
-  const orderedActions = determineTurnOrder(allActionObjects.map(a => a.action));
+  const playerActionMap = new Map(playerActions.map(entry => [entry.action.actor.name, entry.action]));
+  const turnEntries = buildTurnEntries(playerTeam, enemyTeam, playerActionMap);
+  const orderedEntries = determineTurnOrder(turnEntries, rng);
+  const orderedActions = buildOrderedActions(orderedEntries, playerActionMap);
 
   const actorsForResolution = [
     ...mapActorsForResolution(playerTeam, mpSpent),

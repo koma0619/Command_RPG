@@ -10,6 +10,12 @@ export interface Action {
   isAuto?: boolean;
 }
 
+/** TurnEntry はターン開始時点での行動順決定用のエントリ。 */
+export interface TurnEntry {
+  actor: Actor;
+  skillName?: SkillId;
+}
+
 /** スキル名から優先度を取得（未定義は 0）。 */
 export const getSkillPriority = (skillName: SkillId): number => {
   const s: Skill | undefined = SKILLS[skillName];
@@ -24,13 +30,16 @@ export const getSkillPriority = (skillName: SkillId): number => {
  * 2) actor.spd（高いほど先）
  * 3) 上記同値はランダム（公平なタイブレーク）
  */
-export const determineTurnOrder = (actions: Action[]): Action[] => {
+export const determineTurnOrder = (
+  entries: TurnEntry[],
+  rng: () => number = Math.random
+): TurnEntry[] => {
   // attach tie-breaker random value
-  const withRand = actions.map(a => ({
-    a,
-    priority: getSkillPriority(a.skillName),
-    spd: a.actor.spd,
-    rand: Math.random()
+  const withRand = entries.map(entry => ({
+    entry,
+    priority: entry.skillName ? getSkillPriority(entry.skillName) : 0,
+    spd: entry.actor.spd,
+    rand: rng()
   }));
 
   withRand.sort((x, y) => {
@@ -39,12 +48,12 @@ export const determineTurnOrder = (actions: Action[]): Action[] => {
     return y.rand - x.rand;
   });
 
-  return withRand.map(w => w.a);
+  return withRand.map(w => w.entry);
 };
 
 /** ヘルパー: 行動順をわかりやすい文字列配列で返す */
-export const formatOrder = (ordered: Action[]): string[] => {
-  return ordered.map(o => `${o.actor.emoji ?? ''}${o.actor.name} -> ${o.skillName}`);
+export const formatOrder = (ordered: TurnEntry[]): string[] => {
+  return ordered.map(o => `${o.actor.emoji ?? ''}${o.actor.name} -> ${o.skillName ?? 'auto'}`);
 };
 
 export default {

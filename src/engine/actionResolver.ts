@@ -18,7 +18,7 @@ export type ResolveEvent = {
 
 /**
  * 簡易行動解決関数
- * - actions は実行順に並んだ Action[]（determineTurnOrder の返り値）
+ * - actions は実行順に並んだ Action[]（determineTurnOrder で決めた順）
  * - actors は全アクター（攻撃者・被攻撃者）を含む配列。オブジェクトはミューテートされる。
  * - sm は StatusManager インスタンス
  */
