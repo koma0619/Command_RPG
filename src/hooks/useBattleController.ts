@@ -13,6 +13,7 @@ import {
 } from '../engine/commandRules';
 import { StatusManager } from '../engine/statusManager';
 import type { BattleActor } from '../types/battleTypes';
+import type { ResolveEvent } from '../engine/actionResolver';
 import type { SkillId } from '../types/skillIds';
 import type { QueuedAction } from '../types/queuedAction';
 
@@ -37,6 +38,28 @@ export function useBattleController() {
 
   const logMessage = (message: string) => {
     setBattleLog(prev => [...prev, message]);
+  };
+
+  const formatTargetLabel = (targetIds: string[]) => {
+    if (targetIds.length === 0) return '対象';
+    if (targetIds.length === 1) return targetIds[0];
+    return targetIds.join('、');
+  };
+
+  const buildEventMessage = (event: ResolveEvent) => {
+    const skillLabel = getSkillLabel(event.skill);
+    const targetLabel = formatTargetLabel(event.targetIds);
+    const valueLabel = event.value !== undefined ? `(${event.value})` : '';
+
+    if (event.kind === 'damage') {
+      return `${event.actorName}が${targetLabel}に${skillLabel}をした！${valueLabel}`;
+    }
+    if (event.kind === 'heal') {
+      return `${event.actorName}が${targetLabel}を${skillLabel}で回復${valueLabel}`;
+    }
+
+    const detail = event.detail ? `→${event.detail}` : '';
+    return `${event.actorName}の${skillLabel}${detail}`;
   };
 
   const resetBattle = () => {
@@ -113,9 +136,7 @@ export function useBattleController() {
     });
 
     outcome.events.forEach(event => {
-      const skillLabel = getSkillLabel(event.skill);
-      const detail = event.detail ? `→${event.detail}` : '';
-      logMessage(`${event.actorName}の${skillLabel}${detail}`);
+      logMessage(buildEventMessage(event));
     });
 
     setPlayerTeam(outcome.nextPlayerTeam);
