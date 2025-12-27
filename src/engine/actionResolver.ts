@@ -25,11 +25,17 @@ export type ResolveEvent = {
 export const resolveActions = (
   actions: Action[],
   actors: Actor[],
-  sm: StatusManager
+  sm: StatusManager,
+  rng: () => number = Math.random
 ): { actors: Actor[]; events: ResolveEvent[] } => {
   const events: ResolveEvent[] = [];
   const actorMap = new Map<string, Actor>();
   for (const a of actors) actorMap.set(a.name, a);
+
+  const pickRandom = <T>(items: T[]): T | null => {
+    if (items.length === 0) return null;
+    return items[Math.floor(rng() * items.length)];
+  };
 
   const pickTarget = (user: Actor, targetType: Skill['target'], override?: string[]): Actor[] => {
     if (override && override.length > 0) {
@@ -43,27 +49,52 @@ export const resolveActions = (
     const allies = all.filter(x => x.isEnemy === user.isEnemy && x.hp > 0);
 
     if (targetType === 'self') return [user];
-    if (targetType === 'ally_single') return allies.length ? [allies[0]] : [];
+    if (targetType === 'ally_single') {
+      const target = pickRandom(allies);
+      return target ? [target] : [];
+    }
     if (targetType === 'ally_all') return allies;
-    if (targetType === 'enemy_single') return enemies.length ? [enemies[0]] : [];
+    if (targetType === 'enemy_single') {
+      const target = pickRandom(enemies);
+      return target ? [target] : [];
+    }
     if (targetType === 'enemy_all') return enemies;
     return [];
+  };
+
+  const chooseAutoSkill = (user: Actor): SkillId => {
+    const candidates = new Set<SkillId>(user.skills);
+    candidates.add('attack');
+    const usable = Array.from(candidates).filter(id => {
+      const skill = SKILLS[id];
+      if (!skill) return false;
+      const cost = skill.mpCost ?? 0;
+      return user.mp >= cost;
+    });
+    if (usable.length === 0) return 'attack';
+    return usable[Math.floor(rng() * usable.length)];
   };
 
   for (const act of actions) {
     const attacker = actorMap.get(act.actor.name);
     if (!attacker || attacker.hp <= 0) continue; // dead can't act
 
-    const skill = SKILLS[act.skillName];
+    const skillId = act.isAuto ? chooseAutoSkill(attacker) : act.skillName;
+    const skill = SKILLS[skillId];
+    if (!skill) continue;
+    if (act.isAuto) {
+      const cost = skill.mpCost ?? 0;
+      attacker.mp = Math.max(0, attacker.mp - cost);
+    }
 
     const targets = pickTarget(attacker, skill.target, act.targetIds);
 
     if (skill.type === 'buff') {
       // apply buff to targets
       for (const t of targets) {
-        const res = sm.addEffectBySkill(t.name, act.skillName);
-        if (res.applied) events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'apply_buff' });
-        else events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'other', detail: res.reason });
+        const res = sm.addEffectBySkill(t.name, skillId);
+        if (res.applied) events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'apply_buff' });
+        else events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: res.reason });
       }
       continue;
     }
@@ -78,7 +109,7 @@ export const resolveActions = (
               events.push({
                 actorId: attacker.name,
                 actorName: attacker.name,
-                skill: act.skillName,
+                skill: skillId,
                 targetIds: [t.name],
                 kind: 'remove_buff',
                 value: removed.length,
@@ -87,11 +118,11 @@ export const resolveActions = (
             }
           }
 
-          const res = sm.addEffectBySkill(t.name, act.skillName);
+          const res = sm.addEffectBySkill(t.name, skillId);
           if (res.applied) {
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'apply_buff' });
+            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'apply_buff' });
           } else {
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'other', detail: res.reason });
+            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: res.reason });
           }
         }
       }
@@ -120,18 +151,18 @@ export const resolveActions = (
           }
 
           t.hp = Math.max(0, t.hp - damage);
-          events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'damage', value: damage });
+          events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'damage', value: damage });
 
           // drain
           if (skill.drain) {
             const heal = Math.round(damage * skill.drain);
             attacker.hp += heal;
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [attacker.name], kind: 'heal', value: heal });
+            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [attacker.name], kind: 'heal', value: heal });
           }
 
           // gamble miss handling
-          if (skill.chance !== undefined && Math.random() > skill.chance) {
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'miss' });
+          if (skill.chance !== undefined && rng() > skill.chance) {
+            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'miss' });
           }
         }
       }
@@ -142,7 +173,7 @@ export const resolveActions = (
       for (const t of targets) {
         const amount = Math.round(skill.power ?? 0);
         t.hp = t.hp + amount;
-        events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'heal', value: amount });
+        events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'heal', value: amount });
       }
       continue;
     }
@@ -152,16 +183,16 @@ export const resolveActions = (
         if (t.hp <= 0) {
           const revivedHp = Math.max(1, Math.round((t.hp || 0) + 30));
           t.hp = revivedHp;
-          events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'revive', value: revivedHp });
+          events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'revive', value: revivedHp });
         } else {
-          events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: [t.name], kind: 'other', detail: 'target_not_dead' });
+          events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: 'target_not_dead' });
         }
       }
       continue;
     }
 
     // default fallback
-    events.push({ actorId: attacker.name, actorName: attacker.name, skill: act.skillName, targetIds: targets.map(t => t.name), kind: 'other' });
+    events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: targets.map(t => t.name), kind: 'other' });
   }
 
   return { actors: Array.from(actorMap.values()), events };

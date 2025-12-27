@@ -41,7 +41,8 @@ const buildAction = (
   battleActor: BattleActor,
   skillId: QueuedAction['skillId'],
   mpSpent: Map<string, number>,
-  targetIds?: string[]
+  targetIds?: string[],
+  isAuto = false
 ): BuildActionResult => {
   const skill = SKILLS[skillId];
   const cost = skill.mpCost ?? 0;
@@ -52,6 +53,7 @@ const buildAction = (
       actor: { ...battleActor.actor, hp: battleActor.currentHp, mp: mpAfter },
       skillName: skill.id,
       targetIds,
+      isAuto,
     },
     actorAfterMp: mpAfter,
   };
@@ -75,19 +77,12 @@ const buildPlayerActions = (
 
 const buildEnemyActions = (
   enemyTeam: BattleActor[],
-  playerTeam: BattleActor[],
-  mpSpent: Map<string, number>,
-  rng: () => number
+  mpSpent: Map<string, number>
 ): BuildActionResult[] => {
-  const aliveTargets = playerTeam.filter(p => p.currentHp > 0);
   return enemyTeam
     .filter(enemy => enemy.currentHp > 0)
     .map(enemy => {
-      const target =
-        aliveTargets.length > 0
-          ? aliveTargets[Math.floor(rng() * aliveTargets.length)]
-          : null;
-      return buildAction(enemy, 'attack', mpSpent, target ? [target.actor.name] : undefined);
+      return buildAction(enemy, 'attack', mpSpent, undefined, true);
     });
 };
 
@@ -124,7 +119,7 @@ export const executeBattleTurn = ({
   const mpSpent = new Map<string, number>();
 
   const playerActions = buildPlayerActions(actionQueue, playerTeam, enemyTeam, mpSpent);
-  const enemyActions = buildEnemyActions(enemyTeam, playerTeam, mpSpent, rng);
+  const enemyActions = buildEnemyActions(enemyTeam, mpSpent);
   const allActionObjects = [...playerActions, ...enemyActions];
   const orderedActions = determineTurnOrder(allActionObjects.map(a => a.action));
 
@@ -133,7 +128,7 @@ export const executeBattleTurn = ({
     ...mapActorsForResolution(enemyTeam, mpSpent),
   ];
 
-  const results = resolveActions(orderedActions, actorsForResolution, statusManager);
+  const results = resolveActions(orderedActions, actorsForResolution, statusManager, rng);
   const resultMap = new Map(results.actors.map(actor => [actor.name, actor]));
 
   statusManager.tickTurn();

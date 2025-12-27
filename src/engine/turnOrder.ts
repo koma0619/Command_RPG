@@ -7,6 +7,7 @@ export interface Action {
   actor: Actor;
   skillName: SkillId;
   targetIds?: string[];
+  isAuto?: boolean;
 }
 
 /** スキル名から優先度を取得（未定義は 0）。 */
