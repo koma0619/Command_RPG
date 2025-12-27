@@ -10,6 +10,10 @@ export default function App(): React.ReactElement {
     alivePlayersCount,
     battleLog,
     enemyTeam,
+    isResolving,
+    attackingActorId,
+    damagedActorIds,
+    damagePopups,
     pendingActions,
     playerTeam,
     selectedActor,
@@ -49,12 +53,13 @@ export default function App(): React.ReactElement {
           <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button
               onClick={resetBattle}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-orange-400/40 bg-orange-500/20 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-200 transition hover:bg-orange-500/30"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-orange-400/40 bg-orange-500/20 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-200 transition hover:bg-orange-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isResolving}
             >
               リセット
             </button>
-            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide border ${isAwaitingInput ? 'border-sky-400/40 bg-sky-500/20 text-sky-200' : 'border-amber-400/40 bg-amber-500/20 text-amber-200'}`}>
-              ターン {turnInfo}
+            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold tracking-wide border ${isResolving ? 'border-rose-400/40 bg-rose-500/20 text-rose-200' : isAwaitingInput ? 'border-sky-400/40 bg-sky-500/20 text-sky-200' : 'border-amber-400/40 bg-amber-500/20 text-amber-200'}`}>
+              {isResolving ? '演出中' : `ターン ${turnInfo}`}
             </div>
           </div>
         </header>
@@ -64,7 +69,14 @@ export default function App(): React.ReactElement {
             <div className="absolute -top-3 left-5 rounded-full border border-red-900 bg-red-950/80 px-3 py-0.5 text-[10px] font-bold tracking-widest text-red-300">
               ENEMIES
             </div>
-            <EnemyTeamDisplay enemies={enemyTeam} />
+            <EnemyTeamDisplay
+              enemies={enemyTeam}
+              animationState={{
+                attackingActorId,
+                damagedActorIds,
+                damagePopups,
+              }}
+            />
           </div>
 
           <div className="flex h-6 items-center justify-center">
@@ -75,7 +87,15 @@ export default function App(): React.ReactElement {
             <div className="absolute -top-3 left-5 rounded-full border border-sky-900 bg-sky-950/80 px-3 py-0.5 text-[10px] font-bold tracking-widest text-sky-300">
               HEROES
             </div>
-            <PlayerTeamDisplay players={playerTeam} pendingActions={pendingActions} />
+            <PlayerTeamDisplay
+              players={playerTeam}
+              pendingActions={pendingActions}
+              animationState={{
+                attackingActorId,
+                damagedActorIds,
+                damagePopups,
+              }}
+            />
           </div>
         </section>
 
@@ -107,8 +127,9 @@ export default function App(): React.ReactElement {
               {targetCandidates.map((t) => (
                 <button
                   key={t.actor.name}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white transition hover:border-red-400 hover:bg-red-500/20"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-bold text-white transition hover:border-red-400 hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50"
                   onClick={() => handleTargetPick(t.actor.name)}
+                  disabled={isResolving}
                 >
                   {t.actor.emoji} {t.actor.name}
                 </button>
@@ -127,7 +148,7 @@ export default function App(): React.ReactElement {
             actor={selectedActor}
             onSkillSelect={handleSkillSelect}
             onActionComplete={handleCancelSelection}
-            disabled={false}
+            disabled={isResolving}
           />
         )}
 
@@ -138,6 +159,7 @@ export default function App(): React.ReactElement {
                 key={battleActor.actor.name}
                 onClick={() => setSelectedActor(battleActor)}
                 disabled={
+                  isResolving ||
                   battleActor.currentHp <= 0 ||
                   actionQueue.some((a) => a.actorId === battleActor.actor.name)
                 }
@@ -149,14 +171,15 @@ export default function App(): React.ReactElement {
           </section>
         )}
 
-        {actionQueue.length === alivePlayersCount && alivePlayersCount > 0 && (
-          <button
-            onClick={executeTurn}
-            className="mt-2 w-full rounded-full border border-emerald-400/40 bg-emerald-500/20 py-4 text-base font-black tracking-widest text-emerald-200 transition hover:bg-emerald-500/30"
-          >
-            ターンを実行
-          </button>
-        )}
+      {actionQueue.length === alivePlayersCount && alivePlayersCount > 0 && (
+        <button
+          onClick={executeTurn}
+          disabled={isResolving}
+          className="mt-2 w-full rounded-full border border-emerald-400/40 bg-emerald-500/20 py-4 text-base font-black tracking-widest text-emerald-200 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          ターンを実行
+        </button>
+      )}
       </div>
     </div>
   );

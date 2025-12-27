@@ -25,6 +25,12 @@ export function useBattleController() {
   const [actionQueue, setActionQueue] = React.useState<QueuedAction[]>([]);
   const [selectedActor, setSelectedActor] = React.useState<BattleActor | null>(null);
   const [targetPrompt, setTargetPrompt] = React.useState<TargetPrompt | null>(null);
+  const [isResolving, setIsResolving] = React.useState(false);
+  const [attackingActorId, setAttackingActorId] = React.useState<string | null>(null);
+  const [damagedActorIds, setDamagedActorIds] = React.useState<string[]>([]);
+  const [damagePopups, setDamagePopups] = React.useState<
+    { id: string; targetId: string; value: string; kind: 'damage' | 'heal' | 'miss' | 'revive' }[]
+  >([]);
 
   const pendingActions = React.useMemo(() => buildPendingActions(actionQueue), [actionQueue]);
   const targetCandidates = React.useMemo(
@@ -57,9 +63,38 @@ export function useBattleController() {
     if (event.kind === 'heal') {
       return `${event.actorName}が${targetLabel}を${skillLabel}で回復${valueLabel}`;
     }
+    if (event.kind === 'miss') {
+      return `${event.actorName}の${skillLabel}は外れた！`;
+    }
 
     const detail = event.detail ? `→${event.detail}` : '';
     return `${event.actorName}の${skillLabel}${detail}`;
+  };
+
+  const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const applyEventToTeams = (event: ResolveEvent) => {
+    if (!['damage', 'heal', 'revive'].includes(event.kind)) return;
+    const amount = event.value ?? 0;
+    const targetIds = new Set(event.targetIds);
+
+    const updateTeam = (team: BattleActor[]) =>
+      team.map(actor => {
+        if (!targetIds.has(actor.actor.name)) return actor;
+        const maxHp = actor.actor.stats.hp;
+        let nextHp = actor.currentHp;
+        if (event.kind === 'damage') {
+          nextHp = Math.max(0, actor.currentHp - amount);
+        } else if (event.kind === 'heal') {
+          nextHp = Math.min(maxHp, actor.currentHp + amount);
+        } else if (event.kind === 'revive') {
+          nextHp = Math.min(maxHp, amount);
+        }
+        return { ...actor, currentHp: nextHp };
+      });
+
+    setPlayerTeam(prev => updateTeam(prev));
+    setEnemyTeam(prev => updateTeam(prev));
   };
 
   const resetBattle = () => {
@@ -69,6 +104,10 @@ export function useBattleController() {
     setActionQueue([]);
     setSelectedActor(null);
     setTargetPrompt(null);
+    setIsResolving(false);
+    setAttackingActorId(null);
+    setDamagedActorIds([]);
+    setDamagePopups([]);
     statusManager.current.clear();
   };
 
@@ -79,6 +118,7 @@ export function useBattleController() {
   };
 
   const handleSkillSelect = (skillId: SkillId) => {
+    if (isResolving) return;
     if (!selectedActor) return;
 
     const validationMessage = validateSkillSelection({
@@ -112,6 +152,7 @@ export function useBattleController() {
   };
 
   const handleTargetPick = (targetId: string) => {
+    if (isResolving) return;
     if (!targetPrompt) return;
     enqueueAction(targetPrompt.actorId, targetPrompt.skillId, [targetId]);
   };
@@ -121,7 +162,7 @@ export function useBattleController() {
     setTargetPrompt(null);
   };
 
-  const executeTurn = () => {
+  const executeTurn = async () => {
     const validationMessage = ensureAllPlayersQueued(playerTeam, actionQueue);
     if (validationMessage) {
       logMessage(validationMessage);
@@ -135,15 +176,50 @@ export function useBattleController() {
       statusManager: statusManager.current,
     });
 
-    outcome.events.forEach(event => {
-      logMessage(buildEventMessage(event));
-    });
+    setIsResolving(true);
+    setSelectedActor(null);
+    setTargetPrompt(null);
 
+    for (const event of outcome.events) {
+      setAttackingActorId(event.actorId);
+      await wait(200);
+      setAttackingActorId(null);
+
+      if (['damage', 'heal', 'revive', 'miss'].includes(event.kind)) {
+        setDamagedActorIds(event.targetIds);
+        const popupIds = event.targetIds.map(targetId => ({
+          id: `${Date.now()}-${Math.random()}`,
+          targetId,
+          value:
+            event.kind === 'miss'
+              ? 'MISS'
+              : `${event.kind === 'heal' || event.kind === 'revive' ? '+' : ''}${event.value ?? 0}`,
+          kind: event.kind,
+        }));
+        if (popupIds.length > 0) {
+          setDamagePopups(prev => [...prev, ...popupIds]);
+          setTimeout(() => {
+            setDamagePopups(prev => prev.filter(p => !popupIds.some(pop => pop.id === p.id)));
+          }, 900);
+        }
+        await wait(120);
+        setDamagedActorIds([]);
+      }
+
+      if (['damage', 'heal', 'revive'].includes(event.kind)) {
+        applyEventToTeams(event);
+      }
+
+      logMessage(buildEventMessage(event));
+      await wait(280);
+    }
+
+    setAttackingActorId(null);
+    setDamagedActorIds([]);
     setPlayerTeam(outcome.nextPlayerTeam);
     setEnemyTeam(outcome.nextEnemyTeam);
     setActionQueue([]);
-    setSelectedActor(null);
-    setTargetPrompt(null);
+    setIsResolving(false);
 
     if (outcome.enemiesDefeated) {
       logMessage('🎉 勝利！リセットして再戦できます');
@@ -157,6 +233,10 @@ export function useBattleController() {
     alivePlayersCount,
     battleLog,
     enemyTeam,
+    isResolving,
+    attackingActorId,
+    damagedActorIds,
+    damagePopups,
     pendingActions,
     playerTeam,
     selectedActor,

@@ -33,6 +33,11 @@ export function BattleLog({ messages }: BattleLogProps): React.ReactElement {
 
 interface EnemyTeamDisplayProps {
   enemies: BattleActor[];
+  animationState?: {
+    attackingActorId: string | null;
+    damagedActorIds: string[];
+    damagePopups: { id: string; targetId: string; value: string; kind: 'damage' | 'heal' | 'miss' | 'revive' }[];
+  };
 }
 
 function HpBar({ current, max }: { current: number; max: number }): React.ReactElement {
@@ -50,16 +55,31 @@ function HpBar({ current, max }: { current: number; max: number }): React.ReactE
   );
 }
 
-export function EnemyTeamDisplay({ enemies }: EnemyTeamDisplayProps): React.ReactElement {
+export function EnemyTeamDisplay({ enemies, animationState }: EnemyTeamDisplayProps): React.ReactElement {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {enemies.map((e) => {
         const isDown = e.currentHp <= 0;
+        const isAttacking = animationState?.attackingActorId === e.actor.name;
+        const isDamaged = animationState?.damagedActorIds.includes(e.actor.name) ?? false;
+        const popup = animationState?.damagePopups.find(p => p.targetId === e.actor.name);
+        const motionClass = isAttacking
+          ? 'translate-y-3 scale-105'
+          : isDamaged
+            ? 'translate-x-2 bg-red-700/70'
+            : 'translate-y-0';
         return (
           <div
             key={e.actor.name}
-            className={`rounded-xl border border-white/10 bg-slate-900/60 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition ${isDown ? 'opacity-50 grayscale' : 'hover:border-red-400/60'}`}
+            className={`relative rounded-xl border border-white/10 bg-slate-900/60 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-200 ${motionClass} ${isDown ? 'opacity-50 grayscale' : 'hover:border-red-400/60'}`}
           >
+            {popup && (
+              <div className="pointer-events-none absolute -top-7 left-0 right-0 text-center text-2xl font-black text-white drop-shadow-[0_6px_12px_rgba(0,0,0,0.8)] animate-bounce">
+                <span className={popup.kind === 'heal' || popup.kind === 'revive' ? 'text-emerald-300' : popup.kind === 'miss' ? 'text-white/80' : 'text-rose-300'}>
+                  {popup.value}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between gap-2">
               <div className="truncate text-sm font-bold text-white">{e.actor.emoji} {e.actor.name}</div>
               <span className="rounded-full border border-red-500/30 bg-red-500/20 px-2 py-0.5 text-[10px] font-bold tracking-widest text-red-200">
@@ -85,19 +105,39 @@ export function EnemyTeamDisplay({ enemies }: EnemyTeamDisplayProps): React.Reac
 interface PlayerTeamDisplayProps {
   players: BattleActor[];
   pendingActions: Map<string, string>;
+  animationState?: {
+    attackingActorId: string | null;
+    damagedActorIds: string[];
+    damagePopups: { id: string; targetId: string; value: string; kind: 'damage' | 'heal' | 'miss' | 'revive' }[];
+  };
 }
 
-export function PlayerTeamDisplay({ players, pendingActions }: PlayerTeamDisplayProps): React.ReactElement {
+export function PlayerTeamDisplay({ players, pendingActions, animationState }: PlayerTeamDisplayProps): React.ReactElement {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {players.map((p) => {
         const isDown = p.currentHp <= 0;
+        const isAttacking = animationState?.attackingActorId === p.actor.name;
+        const isDamaged = animationState?.damagedActorIds.includes(p.actor.name) ?? false;
+        const popup = animationState?.damagePopups.find(pop => pop.targetId === p.actor.name);
+        const motionClass = isAttacking
+          ? '-translate-y-3 scale-105'
+          : isDamaged
+            ? 'translate-x-2 bg-red-700/70'
+            : 'translate-y-0';
         const pendingLabel = pendingActions.get(p.actor.name);
         return (
           <div
             key={p.actor.name}
-            className={`rounded-xl border border-white/10 bg-slate-900/60 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition ${isDown ? 'opacity-50 grayscale' : 'hover:border-sky-400/60'}`}
+            className={`relative rounded-xl border border-white/10 bg-slate-900/60 p-3 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-200 ${motionClass} ${isDown ? 'opacity-50 grayscale' : 'hover:border-sky-400/60'}`}
           >
+            {popup && (
+              <div className="pointer-events-none absolute -top-7 left-0 right-0 text-center text-2xl font-black text-white drop-shadow-[0_6px_12px_rgba(0,0,0,0.8)] animate-bounce">
+                <span className={popup.kind === 'heal' || popup.kind === 'revive' ? 'text-emerald-300' : popup.kind === 'miss' ? 'text-white/80' : 'text-rose-300'}>
+                  {popup.value}
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between gap-2">
               <div className="truncate text-sm font-bold text-white">{p.actor.emoji} {p.actor.name}</div>
               <span className="rounded-full border border-sky-500/30 bg-sky-500/20 px-2 py-0.5 text-[10px] font-bold tracking-widest text-sky-200">
