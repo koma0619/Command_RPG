@@ -112,7 +112,12 @@ const mapActorsForResolution = (
 ) => {
   return team.map(ba => {
     const cost = mpSpent.get(ba.actor.name) ?? 0;
-    return { ...ba.actor, hp: ba.currentHp, mp: Math.max(0, ba.currentMp - cost) };
+    return {
+      ...ba.actor,
+      hp: ba.currentHp,
+      mp: Math.max(0, ba.currentMp - cost),
+      maxHp: ba.actor.hp,
+    };
   });
 };
 

@@ -32,6 +32,11 @@ export const resolveActions = (
   const actorMap = new Map<string, Actor>();
   for (const a of actors) actorMap.set(a.name, a);
 
+  const clampHp = (actor: Actor, nextHp: number) => {
+    const maxHp = actor.maxHp ?? actor.hp;
+    return Math.min(maxHp, nextHp);
+  };
+
   const pickRandom = <T>(items: T[]): T | null => {
     if (items.length === 0) return null;
     return items[Math.floor(rng() * items.length)];
@@ -156,7 +161,7 @@ export const resolveActions = (
           // drain
           if (skill.drain) {
             const heal = Math.round(damage * skill.drain);
-            attacker.hp += heal;
+            attacker.hp = clampHp(attacker, attacker.hp + heal);
             events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [attacker.name], kind: 'heal', value: heal });
           }
 
@@ -172,7 +177,7 @@ export const resolveActions = (
     if (skill.type === 'heal' || skill.type === 'heal_regen') {
       for (const t of targets) {
         const amount = Math.round(skill.power ?? 0);
-        t.hp = t.hp + amount;
+        t.hp = clampHp(t, t.hp + amount);
         events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'heal', value: amount });
       }
       continue;
@@ -182,7 +187,7 @@ export const resolveActions = (
       for (const t of targets) {
         if (t.hp <= 0) {
           const revivedHp = Math.max(1, Math.round((t.hp || 0) + 30));
-          t.hp = revivedHp;
+          t.hp = clampHp(t, revivedHp);
           events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'revive', value: revivedHp });
         } else {
           events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: 'target_not_dead' });
