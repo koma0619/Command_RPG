@@ -43,7 +43,7 @@ export const resolveActions = (
   };
 
   const pickTarget = (user: Actor, targetType: Skill['target'], override?: string[]): Actor[] => {
-    if (override && override.length > 0) {
+    if (override?.length) {
       return override
         .map(id => actorMap.get(id))
         .filter((t): t is Actor => !!t && t.hp > 0);
@@ -92,14 +92,31 @@ export const resolveActions = (
       attacker.mp = Math.max(0, attacker.mp - cost);
     }
 
+    const emit = (
+      kind: ResolveEvent['kind'],
+      targetIds: string[],
+      value?: number,
+      detail?: string
+    ) => {
+      events.push({
+        actorId: attacker.name,
+        actorName: attacker.name,
+        skill: skillId,
+        targetIds,
+        kind,
+        value,
+        detail,
+      });
+    };
+
     const targets = pickTarget(attacker, skill.target, act.targetIds);
 
     if (skill.type === 'buff') {
       // apply buff to targets
       for (const t of targets) {
         const res = sm.addEffectBySkill(t.name, skillId);
-        if (res.applied) events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'apply_buff' });
-        else events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: res.reason });
+        if (res.applied) emit('apply_buff', [t.name]);
+        else emit('other', [t.name], undefined, res.reason);
       }
       continue;
     }
@@ -111,23 +128,15 @@ export const resolveActions = (
           if (conflictKind) {
             const removed = sm.removeEffect(t.name, skill.effect.key, conflictKind);
             if (removed.length > 0) {
-              events.push({
-                actorId: attacker.name,
-                actorName: attacker.name,
-                skill: skillId,
-                targetIds: [t.name],
-                kind: 'remove_buff',
-                value: removed.length,
-                detail: skill.effect.key
-              });
+              emit('remove_buff', [t.name], removed.length, skill.effect.key);
             }
           }
 
           const res = sm.addEffectBySkill(t.name, skillId);
           if (res.applied) {
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'apply_buff' });
+            emit('apply_buff', [t.name]);
           } else {
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: res.reason });
+            emit('other', [t.name], undefined, res.reason);
           }
         }
       }
@@ -156,18 +165,18 @@ export const resolveActions = (
           }
 
           t.hp = Math.max(0, t.hp - damage);
-          events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'damage', value: damage });
+          emit('damage', [t.name], damage);
 
           // drain
           if (skill.drain) {
             const heal = Math.round(damage * skill.drain);
             attacker.hp = clampHp(attacker, attacker.hp + heal);
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [attacker.name], kind: 'heal', value: heal });
+            emit('heal', [attacker.name], heal);
           }
 
           // gamble miss handling
           if (skill.chance !== undefined && rng() > skill.chance) {
-            events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'miss' });
+            emit('miss', [t.name]);
           }
         }
       }
@@ -178,7 +187,7 @@ export const resolveActions = (
       for (const t of targets) {
         const amount = Math.round(skill.power ?? 0);
         t.hp = clampHp(t, t.hp + amount);
-        events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'heal', value: amount });
+        emit('heal', [t.name], amount);
       }
       continue;
     }
@@ -188,16 +197,16 @@ export const resolveActions = (
         if (t.hp <= 0) {
           const revivedHp = Math.max(1, Math.round((t.hp || 0) + 30));
           t.hp = clampHp(t, revivedHp);
-          events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'revive', value: revivedHp });
+          emit('revive', [t.name], revivedHp);
         } else {
-          events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: [t.name], kind: 'other', detail: 'target_not_dead' });
+          emit('other', [t.name], undefined, 'target_not_dead');
         }
       }
       continue;
     }
 
     // default fallback
-    events.push({ actorId: attacker.name, actorName: attacker.name, skill: skillId, targetIds: targets.map(t => t.name), kind: 'other' });
+    emit('other', targets.map(t => t.name));
   }
 
   return { actors: Array.from(actorMap.values()), events };

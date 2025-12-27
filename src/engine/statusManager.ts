@@ -73,10 +73,12 @@ export class StatusManager {
   public tickTurn(): { removed: StatusEffect[] } {
     const removed: StatusEffect[] = [];
     for (const [ownerId, arr] of this.effects.entries()) {
-      const remaining = arr.map(e => ({ ...e, remainingTurns: e.remainingTurns - 1 }))
-        .filter(e => e.remainingTurns > 0);
-  const gone = arr.filter(e => e.remainingTurns - 1 <= 0);
-      if (gone.length > 0) removed.push(...gone.map(g => ({ ...g, remainingTurns: 0 })));
+      const remaining: StatusEffect[] = [];
+      for (const e of arr) {
+        const next = { ...e, remainingTurns: e.remainingTurns - 1 };
+        if (next.remainingTurns > 0) remaining.push(next);
+        else removed.push({ ...e, remainingTurns: 0 });
+      }
       if (remaining.length > 0) this.effects.set(ownerId, remaining);
       else this.effects.delete(ownerId);
     }

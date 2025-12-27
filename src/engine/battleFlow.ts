@@ -5,11 +5,6 @@ import type { BattleActor } from '../types/battleTypes';
 import type { QueuedAction } from '../types/queuedAction';
 import StatusManager from './statusManager';
 
-interface BuildActionResult {
-  action: Action;
-  actorAfterMp: number;
-}
-
 export interface ExecuteBattleTurnParams {
   playerTeam: BattleActor[];
   enemyTeam: BattleActor[];
@@ -43,19 +38,16 @@ const buildAction = (
   mpSpent: Map<string, number>,
   targetIds?: string[],
   isAuto = false
-): BuildActionResult => {
+): Action => {
   const skill = SKILLS[skillId];
   const cost = skill.mpCost ?? 0;
   const mpAfter = Math.max(0, battleActor.currentMp - cost);
   mpSpent.set(battleActor.actor.name, cost);
   return {
-    action: {
-      actor: { ...battleActor.actor, hp: battleActor.currentHp, mp: mpAfter },
-      skillName: skill.id,
-      targetIds,
-      isAuto,
-    },
-    actorAfterMp: mpAfter,
+    actor: { ...battleActor.actor, hp: battleActor.currentHp, mp: mpAfter },
+    skillName: skill.id,
+    targetIds,
+    isAuto,
   };
 };
 
@@ -64,7 +56,7 @@ const buildPlayerActions = (
   playerTeam: BattleActor[],
   enemyTeam: BattleActor[],
   mpSpent: Map<string, number>
-): BuildActionResult[] => {
+): Action[] => {
   const actors = [...playerTeam, ...enemyTeam];
   return queue
     .map(entry => {
@@ -72,38 +64,7 @@ const buildPlayerActions = (
       if (!battleActor) return null;
       return buildAction(battleActor, entry.skillId, mpSpent, entry.targetIds);
     })
-    .filter((action): action is BuildActionResult => action !== null);
-};
-
-const buildTurnEntries = (
-  playerTeam: BattleActor[],
-  enemyTeam: BattleActor[],
-  playerActions: Map<string, Action>
-): TurnEntry[] => {
-  const all = [...playerTeam, ...enemyTeam].filter(actor => actor.currentHp > 0);
-  return all.map(battleActor => ({
-    actor: {
-      ...battleActor.actor,
-      hp: battleActor.currentHp,
-      mp: battleActor.currentMp,
-    },
-    skillName: playerActions.get(battleActor.actor.name)?.skillName,
-  }));
-};
-
-const buildOrderedActions = (
-  orderedEntries: TurnEntry[],
-  playerActions: Map<string, Action>
-): Action[] => {
-  return orderedEntries.map(entry => {
-    const planned = playerActions.get(entry.actor.name);
-    if (planned) return planned;
-    return {
-      actor: entry.actor,
-      skillName: 'attack',
-      isAuto: true,
-    };
-  });
+    .filter((action): action is Action => action !== null);
 };
 
 const mapActorsForResolution = (
@@ -144,10 +105,27 @@ export const executeBattleTurn = ({
   const mpSpent = new Map<string, number>();
 
   const playerActions = buildPlayerActions(actionQueue, playerTeam, enemyTeam, mpSpent);
-  const playerActionMap = new Map(playerActions.map(entry => [entry.action.actor.name, entry.action]));
-  const turnEntries = buildTurnEntries(playerTeam, enemyTeam, playerActionMap);
+  const playerActionMap = new Map(playerActions.map(action => [action.actor.name, action]));
+  const turnEntries: TurnEntry[] = [...playerTeam, ...enemyTeam]
+    .filter(actor => actor.currentHp > 0)
+    .map(battleActor => ({
+      actor: {
+        ...battleActor.actor,
+        hp: battleActor.currentHp,
+        mp: battleActor.currentMp,
+      },
+      skillName: playerActionMap.get(battleActor.actor.name)?.skillName,
+    }));
   const orderedEntries = determineTurnOrder(turnEntries, rng);
-  const orderedActions = buildOrderedActions(orderedEntries, playerActionMap);
+  const orderedActions = orderedEntries.map(entry => {
+    return (
+      playerActionMap.get(entry.actor.name) ?? {
+        actor: entry.actor,
+        skillName: 'attack',
+        isAuto: true,
+      }
+    );
+  });
 
   const actorsForResolution = [
     ...mapActorsForResolution(playerTeam, mpSpent),
