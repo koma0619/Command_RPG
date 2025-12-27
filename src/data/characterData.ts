@@ -1,4 +1,5 @@
 import type { Actor, BattleActor } from '@/types/battleTypes';
+import type { SkillId } from '@/types/skillIds';
 
 // モンスターデータ（敵キャラクター）
 const ENEMY_CHARACTERS: Actor[] = [
@@ -14,7 +15,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'niou_dachi',
       'kabuto_wari'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'トロル',
@@ -28,7 +29,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'otakebi',
       'yaiba_kuda'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'メガザルロック',
@@ -42,7 +43,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'mega_zaru',
       'miracle_sword'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'キラーパンサー',
@@ -56,7 +57,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'shippu_tsuki',
       'hayabusa_giri'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'バーサーカー',
@@ -70,7 +71,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'sutemi_kogeki',
       'nagi_harai'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'おおきづち',
@@ -84,7 +85,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'tameru',
       'samidare_giri'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'メラゴースト',
@@ -98,7 +99,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'mera_mi',
       'mera_zoma'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'ベビーサタン',
@@ -112,7 +113,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'io_ra',
       'io_nazun'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'ようじゅつし',
@@ -126,7 +127,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'bike_ruto',
       'hena_tos'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'ホイミスライム',
@@ -140,7 +141,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'hoimi',
       'magic_barrier'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'キメラ',
@@ -154,7 +155,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'behomarah',
       'zaoral'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'メーダ',
@@ -168,7 +169,7 @@ const ENEMY_CHARACTERS: Actor[] = [
     skills: [
       'rihoimi',
       'sca_ra'
-    ]
+    ] satisfies SkillId[]
   }
 ];
 
@@ -187,7 +188,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     skills: [
       'niou_dachi',
       'kabuto_wari'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'シェイド',
@@ -201,7 +202,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     skills: [
       'yaiba_kuda',
       'otakebi'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'リオ',
@@ -215,7 +216,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     skills: [
       'shippu_tsuki',
       'hayabusa_giri'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'バルガス',
@@ -229,7 +230,7 @@ const PLAYER_CHARACTERS: Actor[] = [
     skills: [
       'sutemi_kogeki',
       'nagi_harai'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'アリア',
@@ -244,7 +245,7 @@ const PLAYER_CHARACTERS: Actor[] = [
       'mera_mi',
       'mera_zoma',
       'pio_ra'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'ルフナ',
@@ -259,7 +260,7 @@ const PLAYER_CHARACTERS: Actor[] = [
       'io_ra',
       'ruka_ni',
       'hena_tos'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'セレス',
@@ -274,7 +275,7 @@ const PLAYER_CHARACTERS: Actor[] = [
       'behomarah',
       'sca_ra',
       'zaoral'
-    ]
+    ] satisfies SkillId[]
   },
   {
     name: 'フィオナ',
@@ -289,7 +290,7 @@ const PLAYER_CHARACTERS: Actor[] = [
       'hoimi',
       'bike_ruto',
       'magic_barrier'
-    ]
+    ] satisfies SkillId[]
   }
 ];
 
